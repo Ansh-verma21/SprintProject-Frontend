@@ -55,7 +55,7 @@ public class TeamController {
         return Arrays.asList(
                 new MemberDTO(1, "Ansh Verma", "Film", "/images/member1.jpg"),
                 new MemberDTO(2, "Manan Kr. Agarwal", "Actor", "/images/member2.jpg"),
-                new MemberDTO(3, "Aayush Saxena", "Customer", "/images/member3.jpg"),
+                new MemberDTO(3, "Aayush Saxena", "Customer", "https://raw.githubusercontent.com/aayush0982/SprintProject-Frontend/dev/images/member3.jpg"),
                 new MemberDTO(4, "Aniket Rathore", "Staff", "/images/member4.jpg"),
                 new MemberDTO(5, "Mohd Amaan", "Store & Inventory", "/images/member5.jpg"),
                 new MemberDTO(6, "Aurindum Bose", "Language", "/images/member6.jpg"));
