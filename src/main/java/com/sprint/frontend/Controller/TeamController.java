@@ -7,6 +7,7 @@ import com.sprint.frontend.DTO.MemberDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -18,14 +19,14 @@ public class TeamController {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String BASE_URL = "http://localhost:8000";
 
-    // ── HOME PAGE ─────────────────────────────────────────────
+    // HOME
     @GetMapping("/")
     public String teamPage(Model model) {
         model.addAttribute("members", buildMembers());
         return "index";
     }
 
-    // ── MEMBER DETAIL PAGE (GET — auto-loads first city) ─────
+    // MEMBER PAGE
     @GetMapping("/member/{id}")
     public String memberDetail(@PathVariable int id, Model model) {
 
@@ -40,13 +41,15 @@ public class TeamController {
         model.addAttribute("member", member);
         model.addAttribute("cities", cities);
         model.addAttribute("selectedCity", defaultCity);
+        model.addAttribute("searchMode", false);
+        model.addAttribute("searchQuery", "");
         model.addAttribute("customers",
                 defaultCity.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(defaultCity));
 
         return "member3";
     }
 
-    // ── MEMBER DETAIL PAGE (POST — city filter) ───────────────
+    // CITY FILTER
     @PostMapping("/member/{id}")
     public String memberDetailFiltered(
             @PathVariable int id,
@@ -61,12 +64,76 @@ public class TeamController {
         model.addAttribute("member", member);
         model.addAttribute("cities", fetchCities());
         model.addAttribute("selectedCity", city);
+        model.addAttribute("searchMode", false);
+        model.addAttribute("searchQuery", "");
         model.addAttribute("customers", fetchCustomersByCity(city));
 
         return "member3";
     }
 
-    // ── HELPERS ───────────────────────────────────────────────
+    // SEARCH (independent of city)
+    @GetMapping("/member/{id}/search")
+    public String memberSearch(
+            @PathVariable int id,
+            @RequestParam(value = "query", defaultValue = "") String query,
+            Model model) {
+
+        if (id != 3) return "redirect:/";
+
+        MemberDTO member = getMember(id);
+        if (member == null) return "redirect:/";
+
+        List<String> cities = fetchCities();
+
+        model.addAttribute("member", member);
+        model.addAttribute("cities", cities);
+        model.addAttribute("selectedCity", "");
+        model.addAttribute("searchMode", true);
+        model.addAttribute("searchQuery", query);
+
+        if (query == null || query.trim().isEmpty()) {
+            model.addAttribute("customers", Collections.emptyList());
+            return "member3";
+        }
+
+        String[] parts = query.trim().split("\\s+", 2);
+        String firstName = parts[0];
+        String lastName  = parts.length > 1 ? parts[1] : "";
+
+        List<CustomerDTO> results = searchCustomers(firstName, lastName);
+
+        model.addAttribute("customers", results);
+
+        return "member3";
+    }
+
+    // SEARCH HELPER
+    private List<CustomerDTO> searchCustomers(String firstName, String lastName) {
+        List<CustomerDTO> customers = new ArrayList<>();
+        try {
+            String url = BASE_URL
+                    + "/customers/search/findByFirstNameAndLastName?firstName="
+                    + firstName.toUpperCase()
+                    + (lastName.isEmpty() ? "" : "&lastName=" + lastName.toUpperCase())
+                    + "&project=CustomerProjection";
+
+            String json = restTemplate.getForObject(url, String.class);
+            JsonNode content = objectMapper.readTree(json).path("content");
+
+            for (JsonNode c : content) {
+                customers.add(new CustomerDTO(
+                        c.path("firstName").asText() + " " + c.path("lastName").asText(),
+                        c.path("email").asText(),
+                        c.path("active").asBoolean()
+                ));
+            }
+        } catch (HttpClientErrorException.NotFound e) {
+            return new ArrayList<>();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return customers;
+    }
 
     private MemberDTO getMember(int id) {
         return buildMembers().stream()
@@ -80,6 +147,7 @@ public class TeamController {
             String url = BASE_URL + "/cities?page=0&size=100";
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
+
             for (JsonNode node : root.path("content")) {
                 cityNames.add(node.path("city").asText());
             }
@@ -92,33 +160,19 @@ public class TeamController {
     private List<CustomerDTO> fetchCustomersByCity(String city) {
         List<CustomerDTO> customers = new ArrayList<>();
         try {
-            String searchUrl = BASE_URL
+            String url = BASE_URL
                     + "/customers/search/findByAddress_City_CityIgnoreCase?city="
                     + city + "&page=0&size=20";
 
-            String searchJson = restTemplate.getForObject(searchUrl, String.class);
-            JsonNode content = objectMapper.readTree(searchJson).path("content");
+            String json = restTemplate.getForObject(url, String.class);
+            JsonNode content = objectMapper.readTree(json).path("content");
 
             for (JsonNode node : content) {
-                String firstName = node.path("firstName").asText();
-                String lastName  = node.path("lastName").asText();
-
-                String detailUrl = BASE_URL
-                        + "/customers/search/findByFirstNameAndLastName?firstName="
-                        + firstName + "&lastName=" + lastName
-                        + "&project=CustomerProjection";
-
-                String detailJson = restTemplate.getForObject(detailUrl, String.class);
-                JsonNode detailContent = objectMapper.readTree(detailJson).path("content");
-
-                if (detailContent.isArray() && detailContent.size() > 0) {
-                    JsonNode c = detailContent.get(0);
-                    customers.add(new CustomerDTO(
-                            firstName + " " + lastName,
-                            c.path("email").asText(),
-                            c.path("active").asBoolean()
-                    ));
-                }
+                customers.add(new CustomerDTO(
+                        node.path("firstName").asText() + " " + node.path("lastName").asText(),
+                        node.path("email").asText(),
+                        node.path("active").asBoolean()
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,7 +180,7 @@ public class TeamController {
         return customers;
     }
 
-    // ── MEMBER DATA ───────────────────────────────────────────
+    // ✅ YOUR ORIGINAL LINKS RESTORED
     private List<MemberDTO> buildMembers() {
         return Arrays.asList(
                 new MemberDTO(1, "Ansh Verma", "Film",
