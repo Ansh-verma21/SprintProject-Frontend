@@ -1,63 +1,129 @@
 package com.sprint.frontend.Controller;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.sprint.frontend.DTO.CustomerDTO;
 import com.sprint.frontend.DTO.MemberDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 @Controller
 public class TeamController {
 
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String BASE_URL = "http://localhost:8000";
+
     // ── HOME PAGE ─────────────────────────────────────────────
     @GetMapping("/")
     public String teamPage(Model model) {
         model.addAttribute("members", buildMembers());
-
-        // ❌ was: return "team";
-        // ✅ correct file is: index.html
         return "index";
     }
 
-    // ── MEMBER DETAIL PAGE ────────────────────────────────────
+    // ── MEMBER DETAIL PAGE (GET — auto-loads first city) ─────
     @GetMapping("/member/{id}")
     public String memberDetail(@PathVariable int id, Model model) {
 
-        List<MemberDTO> members = buildMembers();
+        if (id != 3) return "redirect:/";
 
-        MemberDTO member = members.stream()
-                .filter(m -> m.getMemberNumber() == id)
-                .findFirst()
-                .orElse(null);
+        MemberDTO member = getMember(id);
+        if (member == null) return "redirect:/";
 
-        // only allow member 3 (as per your logic)
-        if (member == null || id != 3) {
-            return "redirect:/";
-        }
+        List<String> cities = fetchCities();
+        String defaultCity = cities.isEmpty() ? "" : cities.get(0);
 
         model.addAttribute("member", member);
+        model.addAttribute("cities", cities);
+        model.addAttribute("selectedCity", defaultCity);
+        model.addAttribute("customers",
+                defaultCity.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(defaultCity));
 
-        // dummy table data (you are not using it in UI yet, so keep it)
-        List<Map<String, String>> data = new ArrayList<>();
-
-        data.add(Map.of(
-                "id", "1",
-                "name", "Sample A",
-                "field1", "Value 1",
-                "field2", "Value 2"));
-
-        data.add(Map.of(
-                "id", "2",
-                "name", "Sample B",
-                "field1", "Value 3",
-                "field2", "Value 4"));
-
-        model.addAttribute("data", data);
-
-        // ❌ was: "member-detail"
-        // ✅ correct file is: member3.html
         return "member3";
+    }
+
+    // ── MEMBER DETAIL PAGE (POST — city filter) ───────────────
+    @PostMapping("/member/{id}")
+    public String memberDetailFiltered(
+            @PathVariable int id,
+            @RequestParam("city") String city,
+            Model model) {
+
+        if (id != 3) return "redirect:/";
+
+        MemberDTO member = getMember(id);
+        if (member == null) return "redirect:/";
+
+        model.addAttribute("member", member);
+        model.addAttribute("cities", fetchCities());
+        model.addAttribute("selectedCity", city);
+        model.addAttribute("customers", fetchCustomersByCity(city));
+
+        return "member3";
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────
+
+    private MemberDTO getMember(int id) {
+        return buildMembers().stream()
+                .filter(m -> m.getMemberNumber() == id)
+                .findFirst().orElse(null);
+    }
+
+    private List<String> fetchCities() {
+        List<String> cityNames = new ArrayList<>();
+        try {
+            String url = BASE_URL + "/cities?page=0&size=100";
+            String json = restTemplate.getForObject(url, String.class);
+            JsonNode root = objectMapper.readTree(json);
+            for (JsonNode node : root.path("content")) {
+                cityNames.add(node.path("city").asText());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cityNames;
+    }
+
+    private List<CustomerDTO> fetchCustomersByCity(String city) {
+        List<CustomerDTO> customers = new ArrayList<>();
+        try {
+            String searchUrl = BASE_URL
+                    + "/customers/search/findByAddress_City_CityIgnoreCase?city="
+                    + city + "&page=0&size=20";
+
+            String searchJson = restTemplate.getForObject(searchUrl, String.class);
+            JsonNode content = objectMapper.readTree(searchJson).path("content");
+
+            for (JsonNode node : content) {
+                String firstName = node.path("firstName").asText();
+                String lastName  = node.path("lastName").asText();
+
+                String detailUrl = BASE_URL
+                        + "/customers/search/findByFirstNameAndLastName?firstName="
+                        + firstName + "&lastName=" + lastName
+                        + "&project=CustomerProjection";
+
+                String detailJson = restTemplate.getForObject(detailUrl, String.class);
+                JsonNode detailContent = objectMapper.readTree(detailJson).path("content");
+
+                if (detailContent.isArray() && detailContent.size() > 0) {
+                    JsonNode c = detailContent.get(0);
+                    customers.add(new CustomerDTO(
+                            firstName + " " + lastName,
+                            c.path("email").asText(),
+                            c.path("active").asBoolean()
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return customers;
     }
 
     // ── MEMBER DATA ───────────────────────────────────────────
@@ -65,19 +131,14 @@ public class TeamController {
         return Arrays.asList(
                 new MemberDTO(1, "Ansh Verma", "Film",
                         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMkg4yY-1vpEMgzIV1GyLIHgGfzPafZ7c4lA&s"),
-
                 new MemberDTO(2, "Manan Kr. Agarwal", "Actor",
                         "https://pbs.twimg.com/profile_images/1168413160019091456/HmkFFlqY_400x400.jpg"),
-
                 new MemberDTO(3, "Aayush Saxena", "Customer",
                         "https://i.pinimg.com/originals/b5/1b/c7/b51bc7c7f77ef1d955e9a2e1b4caa64e.jpg"),
-
                 new MemberDTO(4, "Aniket Rathore", "Staff",
                         "https://i.quotev.com/wgx7jg4haaaa.jpg"),
-
                 new MemberDTO(5, "Mohd Amaan", "Store & Inventory",
                         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4fGl36r2h3AqOEeZVvNE8rvAzn041njqYww&s"),
-
                 new MemberDTO(6, "Aurindum Bose", "Language",
                         "https://media.tenor.com/ba4PQ9G4sksAAAAe/itachi-itachi-spanch-bob.png"));
     }
