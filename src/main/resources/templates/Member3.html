@@ -6,16 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${'Member ' + member.memberNumber + ' — Detail'}">Member Detail</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
-            --cream:     #F9F7F7;
+            --cream: #F9F7F7;
             --soft-blue: #DBE2EF;
-            --accent:    #3F72AF;
+            --accent: #3F72AF;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             background: var(--cream);
@@ -83,15 +89,36 @@
             border-radius: 999px;
             border: 1.5px solid var(--accent);
             background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            outline: none;
         }
 
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(63, 114, 175, 0.14);
+        }
+
+        /* Add Customer — now an anchor styled as a button */
         .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
             padding: 10px 18px;
             border-radius: 999px;
             border: none;
             background: var(--accent);
             color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
             cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+
+        .add-btn:hover {
+            opacity: 0.88;
         }
 
         .table-header-row {
@@ -101,11 +128,31 @@
             margin-bottom: 14px;
         }
 
+        .table-sub-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
         .filter-select {
             border: 1.5px solid var(--accent);
             border-radius: 999px;
-            padding: 8px 14px;
+            padding: 7px 14px;
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+            color: #1a2a3a;
+            cursor: pointer;
+            outline: none;
+            min-width: 170px;
         }
+
+        .filter-select:focus {
+            box-shadow: 0 0 0 3px rgba(63, 114, 175, 0.14);
+        }
+
 
         /* TABLE */
         .data-table {
@@ -127,16 +174,25 @@
             color: white;
             font-size: 0.78rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .data-table td {
             border-top: 1px solid var(--soft-blue);
+            font-size: 0.87rem;
+        }
+
+        .data-table tbody tr:hover td {
+            background: rgba(219, 226, 239, 0.45);
         }
 
         .badge {
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .badge-active {
@@ -154,115 +210,126 @@
             align-items: center;
             gap: 5px;
             color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 500;
             cursor: pointer;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 48px 20px;
+            color: #4a5a6a;
+            font-size: 0.88rem;
         }
 
+        .empty-state .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
 
-<header>
-    <a th:href="@{/}" class="back-btn">← Back</a>
-    <h2 style="color: var(--accent); font-family: 'Playfair Display', serif;">Member Detail</h2>
-</header>
+    <header>
+        <a th:href="@{/}" class="back-btn">← Back</a>
+        <h2 style="color: var(--accent); font-family: 'Playfair Display', serif;">Member Detail</h2>
+    </header>
 
-<div class="content">
+    <div class="content">
 
-    <div class="table-title" th:text="${member.tableName}">Customer</div>
+        <div class="table-title" th:text="${member.tableName}">Customer</div>
 
-    <!-- SEARCH -->
-    <div class="action-bar">
-        <form th:action="@{/member/{id}/search(id=${member.memberNumber})}" method="get" class="search-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="text" name="query" class="search-input"
-                   placeholder="Search customer…" th:value="${searchQuery}" />
-        </form>
+        <!-- ACTION BAR: search + add -->
+        <div class="action-bar">
 
-        <button class="add-btn">+ Add Customer</button>
-    </div>
-
-    <!-- FILTER -->
-    <div class="table-header-row">
-        <span>All Customers</span>
-
-        <form th:action="@{/member/{id}(id=${member.memberNumber})}" method="post">
-            <select name="city" class="filter-select"
-                    onchange="this.form.submit()">
-
-                <option value="" th:selected="${searchMode}">All Cities</option>
-
-                <option th:each="city : ${cities}"
-                        th:value="${city}"
-                        th:text="${city}"
-                        th:selected="${!searchMode and city == selectedCity}">
-                </option>
-
-            </select>
-        </form>
-    </div>
-
-    <!-- TABLE -->
-    <table class="data-table">
-
-        <thead>
-        <tr>
-            <th>S. No.</th>
-            <th>Full Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-
-        <tbody>
-
-        <tr th:each="c, stat : ${customers}">
-            <td th:text="${stat.index + 1}"></td>
-            <td th:text="${c.fullName}"></td>
-            <td th:text="${c.email}"></td>
-            <td>
-                <span th:if="${c.active}" class="badge badge-active">Active</span>
-                <span th:unless="${c.active}" class="badge badge-inactive">Inactive</span>
-            </td>
-            <td>
-                <span class="edit-cell">
+            <!-- Search form -->
+            <form th:action="@{/member/{id}/search(id=${member.memberNumber})}" method="get" class="search-wrap">
+                <span class="search-icon">
                     <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
-                        <path d="M14.85 2.15a2 2 0 0 1 2.83 2.83L6.5 16.16l-4 1 1-4L14.85 2.15z"
-                              stroke="#3F72AF" stroke-width="1.8"
-                              stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="9" cy="9" r="7" stroke="#3F72AF" stroke-width="2" />
+                        <line x1="14.5" y1="14.5" x2="19" y2="19" stroke="#3F72AF" stroke-width="2"
+                            stroke-linecap="round" />
                     </svg>
-                    Edit
                 </span>
-            </td>
-        </tr>
+                <input type="text" name="query" class="search-input" placeholder="Search customer…"
+                    th:value="${searchQuery}" autocomplete="off" />
+            </form>
 
-        <tr th:if="${customers != null and #lists.isEmpty(customers)}">
-            <td colspan="5">
-                <div class="empty-state">
+            <!-- Add Customer → navigates to new page -->
+            <a th:href="@{/member/3/add-customer}" class="add-btn">
+                + Add Customer
+            </a>
 
-                    <p th:if="${searchMode}">
-                        No results found for "<span th:text="${searchQuery}"></span>"
-                    </p>
+        </div>
 
-                    <p th:unless="${searchMode}">
-                        No customers in <span th:text="${selectedCity}"></span>
-                    </p>
+        <!-- TABLE HEADER ROW -->
+        <div class="table-header-row">
 
-                </div>
-            </td>
-        </tr>
+            <span class="table-sub-label">All Customers</span>
 
-        </tbody>
+            <!-- City filter — always visible; blank when in search mode -->
+            <form th:action="@{/member/{id}(id=${member.memberNumber})}" method="post">
+                <select name="city" class="filter-select" onchange="this.form.submit()">
+                    <option value="" th:selected="${searchMode}">— Select City —</option>
+                    <option th:each="city : ${cities}" th:value="${city}" th:text="${city}"
+                        th:selected="${!searchMode and city == selectedCity}">
+                    </option>
+                </select>
+            </form>
 
-    </table>
+        </div>
 
-</div>
+        <!-- TABLE -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <!-- DATA ROWS -->
+                <tr th:each="c, stat : ${customers}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${c.fullName}"></td>
+                    <td th:text="${c.email}"></td>
+                    <td>
+                        <span th:if="${c.active}" class="badge badge-active">Active</span>
+                        <span th:unless="${c.active}" class="badge badge-inactive">Inactive</span>
+                    </td>
+                    <td>
+                        <span class="edit-cell">
+                            <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+                                <path d="M14.85 2.15a2 2 0 0 1 2.83 2.83L6.5 16.16l-4 1 1-4L14.85 2.15z"
+                                    stroke="#3F72AF" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            Edit
+                        </span>
+                    </td>
+                </tr>
+
+                <!-- EMPTY: no results -->
+                <tr th:if="${customers != null and #lists.isEmpty(customers)}">
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="icon">🔍</div>
+                            <p>No records found.</p>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+    </div>
 
 </body>
+
 </html>
