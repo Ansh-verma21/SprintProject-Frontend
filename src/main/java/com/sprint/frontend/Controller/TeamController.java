@@ -16,62 +16,80 @@ import java.util.*;
 public class TeamController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final tools.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
     private static final String BASE_URL = "http://localhost:8000";
+    private static final int CITY_PAGE_SIZE = 100;
 
-    // HOME
+    // ── HOME ──────────────────────────────────────────────────
     @GetMapping("/")
     public String teamPage(Model model) {
         model.addAttribute("members", buildMembers());
         return "index";
     }
 
-    // MEMBER PAGE
+    // ── MEMBER PAGE (GET — default city page 0) ───────────────
     @GetMapping("/member/{id}")
     public String memberDetail(@PathVariable int id, Model model) {
 
         if (id != 3) return "redirect:/";
-
         MemberDTO member = getMember(id);
         if (member == null) return "redirect:/";
 
-        List<String> cities = fetchCities();
-        String defaultCity = cities.isEmpty() ? "" : cities.get(0);
+        CityPage cp = fetchCities(0);
+        String defaultCity = cp.cities.isEmpty() ? "" : cp.cities.get(0);
 
-        model.addAttribute("member", member);
-        model.addAttribute("cities", cities);
+        model.addAttribute("member",       member);
+        model.addAttribute("cities",       cp.cities);
+        model.addAttribute("cityPage",     0);
+        model.addAttribute("hasMoreCities", cp.hasMore);
         model.addAttribute("selectedCity", defaultCity);
-        model.addAttribute("searchMode", false);
-        model.addAttribute("searchQuery", "");
+        model.addAttribute("searchMode",   false);
+        model.addAttribute("searchQuery",  "");
         model.addAttribute("customers",
                 defaultCity.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(defaultCity));
 
         return "member3";
     }
 
-    // CITY FILTER
+    // ── CITY FILTER / PAGE NAVIGATION (POST) ─────────────────
     @PostMapping("/member/{id}")
     public String memberDetailFiltered(
             @PathVariable int id,
-            @RequestParam("city") String city,
+            @RequestParam(value = "city",     defaultValue = "") String city,
+            @RequestParam(value = "cityPage", defaultValue = "0") int cityPage,
+            @RequestParam(value = "pageNav",  defaultValue = "false") boolean pageNav,
             Model model) {
 
         if (id != 3) return "redirect:/";
-
         MemberDTO member = getMember(id);
         if (member == null) return "redirect:/";
 
-        model.addAttribute("member", member);
-        model.addAttribute("cities", fetchCities());
-        model.addAttribute("selectedCity", city);
-        model.addAttribute("searchMode", false);
-        model.addAttribute("searchQuery", "");
-        model.addAttribute("customers", fetchCustomersByCity(city));
+        CityPage cp = fetchCities(cityPage);
+
+        model.addAttribute("member",        member);
+        model.addAttribute("cities",        cp.cities);
+        model.addAttribute("cityPage",      cityPage);
+        model.addAttribute("hasMoreCities", cp.hasMore);
+        model.addAttribute("searchMode",    false);
+        model.addAttribute("searchQuery",   "");
+
+        if (pageNav) {
+            // Auto-select first city of the newly loaded page
+            String autoCity = cp.cities.isEmpty() ? "" : cp.cities.get(0);
+            model.addAttribute("selectedCity", autoCity);
+            model.addAttribute("customers",
+                    autoCity.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(autoCity));
+        } else {
+            // User picked a city from the dropdown
+            model.addAttribute("selectedCity", city);
+            model.addAttribute("customers",
+                    city.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(city));
+        }
 
         return "member3";
     }
 
-    // SEARCH (independent of city)
+    // ── SEARCH (independent of city) ─────────────────────────
     @GetMapping("/member/{id}/search")
     public String memberSearch(
             @PathVariable int id,
@@ -79,17 +97,18 @@ public class TeamController {
             Model model) {
 
         if (id != 3) return "redirect:/";
-
         MemberDTO member = getMember(id);
         if (member == null) return "redirect:/";
 
-        List<String> cities = fetchCities();
+        CityPage cp = fetchCities(0);
 
-        model.addAttribute("member", member);
-        model.addAttribute("cities", cities);
-        model.addAttribute("selectedCity", "");
-        model.addAttribute("searchMode", true);
-        model.addAttribute("searchQuery", query);
+        model.addAttribute("member",        member);
+        model.addAttribute("cities",        cp.cities);
+        model.addAttribute("cityPage",      0);
+        model.addAttribute("hasMoreCities", cp.hasMore);
+        model.addAttribute("selectedCity",  "");
+        model.addAttribute("searchMode",    true);
+        model.addAttribute("searchQuery",   query);
 
         if (query == null || query.trim().isEmpty()) {
             model.addAttribute("customers", Collections.emptyList());
@@ -100,14 +119,69 @@ public class TeamController {
         String firstName = parts[0];
         String lastName  = parts.length > 1 ? parts[1] : "";
 
-        List<CustomerDTO> results = searchCustomers(firstName, lastName);
-
-        model.addAttribute("customers", results);
-
+        model.addAttribute("customers", searchCustomers(firstName, lastName));
         return "member3";
     }
 
-    // SEARCH HELPER
+    // ── HELPERS ───────────────────────────────────────────────
+
+    private static class CityPage {
+        List<String> cities;
+        boolean hasMore;
+        CityPage(List<String> cities, boolean hasMore) {
+            this.cities  = cities;
+            this.hasMore = hasMore;
+        }
+    }
+
+    private CityPage fetchCities(int page) {
+        List<String> cityNames = new ArrayList<>();
+        boolean hasMore = false;
+        try {
+            String url = BASE_URL + "/cities?page=" + page + "&size=" + CITY_PAGE_SIZE;
+            String json = restTemplate.getForObject(url, String.class);
+            JsonNode root = objectMapper.readTree(json);
+
+            for (JsonNode node : root.path("content")) {
+                cityNames.add(node.path("city").asText());
+            }
+
+            // Check if there's a "next" link — means more pages exist
+            for (JsonNode link : root.path("links")) {
+                if ("next".equals(link.path("rel").asText())) {
+                    hasMore = true;
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new CityPage(cityNames, hasMore);
+    }
+
+    private List<CustomerDTO> fetchCustomersByCity(String city) {
+        List<CustomerDTO> customers = new ArrayList<>();
+        try {
+            String url = BASE_URL
+                    + "/customers/search/findByAddress_City_CityIgnoreCase?city="
+                    + city + "&page=0&size=20";
+
+            String json = restTemplate.getForObject(url, String.class);
+            JsonNode content = objectMapper.readTree(json).path("content");
+
+            for (JsonNode node : content) {
+                customers.add(new CustomerDTO(
+                        node.path("firstName").asText() + " " + node.path("lastName").asText(),
+                        node.path("email").asText(),
+                        node.path("active").asBoolean()
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return customers;
+    }
+
     private List<CustomerDTO> searchCustomers(String firstName, String lastName) {
         List<CustomerDTO> customers = new ArrayList<>();
         try {
@@ -141,46 +215,6 @@ public class TeamController {
                 .findFirst().orElse(null);
     }
 
-    private List<String> fetchCities() {
-        List<String> cityNames = new ArrayList<>();
-        try {
-            String url = BASE_URL + "/cities?page=0&size=100";
-            String json = restTemplate.getForObject(url, String.class);
-            JsonNode root = objectMapper.readTree(json);
-
-            for (JsonNode node : root.path("content")) {
-                cityNames.add(node.path("city").asText());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return cityNames;
-    }
-
-    private List<CustomerDTO> fetchCustomersByCity(String city) {
-        List<CustomerDTO> customers = new ArrayList<>();
-        try {
-            String url = BASE_URL
-                    + "/customers/search/findByAddress_City_CityIgnoreCase?city="
-                    + city + "&page=0&size=20";
-
-            String json = restTemplate.getForObject(url, String.class);
-            JsonNode content = objectMapper.readTree(json).path("content");
-
-            for (JsonNode node : content) {
-                customers.add(new CustomerDTO(
-                        node.path("firstName").asText() + " " + node.path("lastName").asText(),
-                        node.path("email").asText(),
-                        node.path("active").asBoolean()
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return customers;
-    }
-
-    // ✅ YOUR ORIGINAL LINKS RESTORED
     private List<MemberDTO> buildMembers() {
         return Arrays.asList(
                 new MemberDTO(1, "Ansh Verma", "Film",

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Customer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cream:     #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent:    #3F72AF;
+            --text-dark: #1a2a3a;
+            --text-mid:  #4a5a6a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--soft-blue);
+            padding: 20px 50px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--cream);
+            font-size: 0.85rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .back-btn:hover { background: var(--accent); color: var(--cream); }
+
+        header h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .page {
+            max-width: 620px;
+            margin: 46px auto;
+            padding: 0 20px 80px;
+        }
+
+        .card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            padding: 40px 44px;
+            box-shadow: 0 6px 28px rgba(63,114,175,0.09);
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .card-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            margin-bottom: 32px;
+        }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(63,114,175,0.2);
+        }
+
+        /* ── FORM ── */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .form-group.half { margin-bottom: 0; }
+
+        label.field-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        /* Read-only fields — greyed out */
+        input.readonly-field {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(63,114,175,0.12);
+            background: rgba(219,226,239,0.5);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: #8a9ab0;
+            outline: none;
+            cursor: not-allowed;
+            user-select: none;
+        }
+
+        /* Lock icon next to read-only label */
+        .locked-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #a0aab4;
+        }
+
+        /* Editable fields */
+        input.editable-field {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(63,114,175,0.3);
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input.editable-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(63,114,175,0.12);
+        }
+        input.editable-field.field-error {
+            border-color: #f87171 !important;
+            box-shadow: 0 0 0 3px rgba(248,113,113,0.15) !important;
+        }
+        input::placeholder { color: #a0aab4; }
+
+        .field-hint {
+            font-size: 0.72rem;
+            color: #8a9ab0;
+        }
+
+        .field-err-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: #dc2626;
+            background: #fee2e2;
+            border-radius: 8px;
+            padding: 7px 10px;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            border: none;
+            border-top: 1.5px solid rgba(63,114,175,0.15);
+            margin: 22px 0;
+        }
+
+        /* ── SUBMIT ── */
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .submit-btn:hover  { opacity: 0.88; }
+        .submit-btn:active { transform: scale(0.99); }
+
+        /* ── GENERAL ERROR BANNER ── */
+        .error-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.84rem;
+            color: #991b1b;
+        }
+
+        /* ── SUCCESS OVERLAY ── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26,42,58,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .popup {
+            background: var(--cream);
+            border-radius: 22px;
+            padding: 44px 48px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(63,114,175,0.22);
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .check-circle {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: #d1fae5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .popup-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .popup-name {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 28px;
+        }
+
+        .popup-actions { display: flex; flex-direction: column; gap: 10px; }
+
+        .popup-btn-primary {
+            display: block;
+            padding: 11px;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .popup-btn-primary:hover { opacity: 0.88; }
+
+        .popup-btn-secondary {
+            display: block;
+            padding: 11px;
+            border-radius: 12px;
+            border: 1.5px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .popup-btn-secondary:hover { background: var(--accent); color: white; }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a th:href="@{/member/3}" class="back-btn">← Back to Customers</a>
+    <h2>Edit Customer</h2>
+</header>
+
+<!-- SUCCESS OVERLAY -->
+<div class="overlay" th:if="${success}">
+    <div class="popup">
+        <div class="check-circle">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="popup-title">Customer Updated!</div>
+        <div class="popup-name" th:text="${fullName}">Full Name</div>
+        <div class="popup-actions">
+            <a th:href="@{/member/3}" class="popup-btn-primary">← Back to Customer Table</a>
+            <a th:href="@{/member/3/add-customer}" class="popup-btn-secondary">+ Add New Customer</a>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+    <div class="card">
+
+        <div class="card-title">Edit Customer</div>
+        <div class="card-subtitle">Name and email are locked. Update address and store below.</div>
+
+        <!-- GENERAL ERROR BANNER -->
+        <div class="error-banner" th:if="${error}">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-top:1px">
+                <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+                <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+            </svg>
+            <span th:text="${errorMsg}">Something went wrong.</span>
+        </div>
+
+        <form th:action="@{/member/3/edit-customer}" method="post">
+
+            <!-- Hidden fields -->
+            <input type="hidden" name="customerId" th:value="${customerId}" />
+            <input type="hidden" name="firstName"  th:value="${firstName}" />
+            <input type="hidden" name="lastName"   th:value="${lastName}" />
+            <input type="hidden" name="email"      th:value="${email}" />
+
+            <!-- ── READ-ONLY: Name & Email ── -->
+            <div class="section-label">Customer Info (locked)</div>
+
+            <div class="form-row">
+                <div class="form-group half">
+                    <label class="locked-label">
+                        <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
+                            <rect x="4" y="9" width="12" height="9" rx="2"
+                                  stroke="#a0aab4" stroke-width="1.8"/>
+                            <path d="M7 9V6a3 3 0 0 1 6 0v3"
+                                  stroke="#a0aab4" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                        First Name
+                    </label>
+                    <input class="readonly-field" type="text"
+                           th:value="${firstName}" readonly />
+                </div>
+                <div class="form-group half">
+                    <label class="locked-label">
+                        <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
+                            <rect x="4" y="9" width="12" height="9" rx="2"
+                                  stroke="#a0aab4" stroke-width="1.8"/>
+                            <path d="M7 9V6a3 3 0 0 1 6 0v3"
+                                  stroke="#a0aab4" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                        Last Name
+                    </label>
+                    <input class="readonly-field" type="text"
+                           th:value="${lastName}" readonly />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="locked-label">
+                    <svg width="11" height="11" viewBox="0 0 20 20" fill="none">
+                        <rect x="4" y="9" width="12" height="9" rx="2"
+                              stroke="#a0aab4" stroke-width="1.8"/>
+                        <path d="M7 9V6a3 3 0 0 1 6 0v3"
+                              stroke="#a0aab4" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    Email
+                </label>
+                <input class="readonly-field" type="text"
+                       th:value="${email}" readonly />
+            </div>
+
+            <hr class="divider" />
+
+            <!-- ── EDITABLE: Address & Store ── -->
+            <div class="section-label">Update Details</div>
+
+            <!-- ADDRESS -->
+            <div class="form-group">
+                <label class="field-label" for="addressText">Address</label>
+                <input class="editable-field"
+                       th:classappend="${addressError} ? ' field-error'"
+                       type="text" id="addressText" name="addressText"
+                       th:value="${v_addressText}"
+                       placeholder="e.g. 47 MySakila Drive" required />
+                <span class="field-hint">Type the full address exactly as it appears in the system.</span>
+                <div class="field-err-msg" th:if="${addressError}">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-top:1px">
+                        <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+                        <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+                    </svg>
+                    <span th:text="${addressErrMsg}">Address not found.</span>
+                </div>
+            </div>
+
+            <!-- STORE CITY -->
+            <div class="form-group">
+                <label class="field-label" for="storeCity">Store City</label>
+                <input class="editable-field"
+                       th:classappend="${storeError} ? ' field-error'"
+                       type="text" id="storeCity" name="storeCity"
+                       th:value="${v_storeCity}"
+                       placeholder="e.g. Lethbridge" required />
+                <span class="field-hint">City where the store is located — we will pick the first matching store.</span>
+                <div class="field-err-msg" th:if="${storeError}">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-top:1px">
+                        <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+                        <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+                    </svg>
+                    <span th:text="${storeErrMsg}">No store found.</span>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Save Changes</button>
+
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>
