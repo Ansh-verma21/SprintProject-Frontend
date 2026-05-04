@@ -42,7 +42,7 @@ public class CustomerDetailController {
 
             if (content.isEmpty()) {
                 model.addAttribute("error", "Customer not found.");
-                return "customerDetail";
+                return "Customerdetail";
             }
 
             JsonNode customer = content.get(0);
@@ -68,7 +68,7 @@ public class CustomerDetailController {
 
             if (customerId <= 0) {
                 model.addAttribute("error", "Could not resolve customer ID.");
-                return "customerDetail";
+                return "Customerdetail";
             }
 
             // ── STEP 2: Get rentals ───────────────────────────────────────────
@@ -96,7 +96,7 @@ public class CustomerDetailController {
             model.addAttribute("error", "Failed to load customer details: " + e.getMessage());
         }
 
-        return "customerDetail";
+        return "Customerdetail";
     }
 
     // ── HELPERS ────────────────────────────────────────────────────────────────

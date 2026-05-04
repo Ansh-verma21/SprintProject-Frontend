@@ -48,7 +48,7 @@ public class TeamController {
         model.addAttribute("customers",
                 defaultCity.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(defaultCity));
 
-        return "member3";
+        return "Member3";
     }
 
     // ── CITY FILTER / PAGE NAVIGATION (POST) ─────────────────
@@ -86,7 +86,7 @@ public class TeamController {
                     city.isEmpty() ? Collections.emptyList() : fetchCustomersByCity(city));
         }
 
-        return "member3";
+        return "Member3";
     }
 
     // ── SEARCH (independent of city) ─────────────────────────
@@ -112,7 +112,7 @@ public class TeamController {
 
         if (query == null || query.trim().isEmpty()) {
             model.addAttribute("customers", Collections.emptyList());
-            return "member3";
+            return "Member3";
         }
 
         String[] parts = query.trim().split("\\s+", 2);
@@ -120,7 +120,7 @@ public class TeamController {
         String lastName  = parts.length > 1 ? parts[1] : "";
 
         model.addAttribute("customers", searchCustomers(firstName, lastName));
-        return "member3";
+        return "Member3";
     }
 
     // ── HELPERS ───────────────────────────────────────────────

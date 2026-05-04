@@ -73,6 +73,12 @@
             margin-bottom: 14px;
         }
 
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
         /* ── INFO TABLE (name / address / phone) ── */
         .info-card {
             background: var(--soft-blue);
@@ -259,7 +265,7 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div th:if="${error == null}">
+    <div class = "main-content" th:if="${error == null}">
 
         <!-- ①  CUSTOMER INFO TABLE ──────────────────────────────────── -->
         <div class="info-card">
