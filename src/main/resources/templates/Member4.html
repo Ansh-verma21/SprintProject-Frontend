@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Directory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent: #3F72AF;
+            --dark: #1a2a3a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--dark); }
+        header { background: var(--soft-blue); padding: 22px 40px; display: flex; align-items: center; gap: 16px; border-bottom: 2px solid var(--accent); }
+        .back-btn { text-decoration: none; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 22px; background: #fff; }
+        .content { max-width: 1060px; margin: 36px auto; padding: 36px; background: white; border-radius: 24px; box-shadow: 0 14px 30px rgba(63,114,175,0.08); }
+        .table-title { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 22px; color: var(--accent); }
+        .action-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .search-wrap { position: relative; width: min(100%, 340px); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
+        .search-input { width: 100%; padding: 11px 16px 11px 36px; border-radius: 999px; border: 1.5px solid var(--accent); background: var(--cream); font-size: 0.9rem; }
+        .add-btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 999px; background: var(--accent); color: white; text-decoration: none; font-weight: 600; }
+        .filter-select { border: 1.5px solid var(--accent); border-radius: 999px; padding: 10px 16px; min-width: 200px; background: var(--cream); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+        .data-table th, .data-table td { padding: 14px 16px; text-align: left; }
+        .data-table th { background: var(--accent); color: white; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-table td { border-top: 1px solid #e5eaf5; font-size: 0.92rem; }
+        .data-table tbody tr:hover td { background: rgba(219,226,239,0.45); }
+        .badge { padding: 5px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+        .edit-cell { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-weight: 600; }
+        .customer-name-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .customer-name-link:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 48px 16px; color: #4a5a6a; }
+    </style>
+</head>
+
+<body>
+<header>
+    <a th:href="@{/}" class="back-btn">← Back</a>
+    <h2 style="font-family: 'Playfair Display', serif;">Staff Directory</h2>
+</header>
+
+<div class="content">
+    <div class="table-title">Staff</div>
+
+    <div class="action-bar">
+        <form th:action="@{/member/{id}/search/staff(id=${member.memberNumber})}" method="get" class="search-wrap">
+            <span class="search-icon">
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="7" stroke="#3F72AF" stroke-width="2"/><line x1="14.5" y1="14.5" x2="19" y2="19" stroke="#3F72AF" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <input type="text" name="query" class="search-input" placeholder="Search staff first name…" th:value="${searchQuery}" autocomplete="off" />
+            <input type="hidden" name="storeId" th:value="${selectedStoreId}" />
+        </form>
+    </div>
+
+    <form th:action="@{/member/{id}(id=${member.memberNumber})}" method="post" style="margin-bottom: 12px;">
+        <select name="storeId" class="filter-select" onchange="this.form.submit()">
+            <option value="0" th:selected="${selectedStoreId == 0}">— Select Store —</option>
+            <option th:each="store : ${stores}" th:value="${store.id}" th:text="${store.label}" th:selected="${store.id == selectedStoreId}"></option>
+        </select>
+    </form>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Username</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s, stat : ${staff}">
+            <td th:text="${stat.index + 1}"></td>
+            <td>
+                <a th:href="@{/member/4/staff(id=${s.staffId})}" class="customer-name-link" th:text="${s.fullName}"></a>
+            </td>
+            <td th:text="${s.email}"></td>
+            <td th:text="${s.username}"></td>
+            <td>
+                <span th:if="${s.active}" class="badge badge-active">Active</span>
+                <span th:unless="${s.active}" class="badge badge-inactive">Inactive</span>
+            </td>
+            <td>
+                <a th:href="@{/member/4/edit-staff(id=${s.staffId})}" class="edit-cell">Edit</a>
+            </td>
+        </tr>
+        <tr th:if="${staff != null and #lists.isEmpty(staff)}">
+            <td colspan="6">
+                <div class="empty-state">
+                    <div class="icon">🔍</div>
+                    <p>No staff members found.</p>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
