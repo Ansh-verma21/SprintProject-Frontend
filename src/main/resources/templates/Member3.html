@@ -10,16 +10,12 @@
 
     <style>
         :root {
-            --cream: #F9F7F7;
+            --cream:     #F9F7F7;
             --soft-blue: #DBE2EF;
-            --accent: #3F72AF;
+            --accent:    #3F72AF;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background: var(--cream);
@@ -43,10 +39,11 @@
             padding: 6px 14px;
             border-radius: 20px;
             background: var(--cream);
+            font-size: 0.85rem;
         }
 
         .content {
-            max-width: 1000px;
+            max-width: 1060px;
             margin: 40px auto;
             padding: 40px;
             background: var(--soft-blue);
@@ -56,55 +53,91 @@
         .table-title {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
-            margin-bottom: 20px;
+            margin-bottom: 28px;
             color: var(--accent);
         }
 
-        .actions {
+        .action-bar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
-        .left-actions {
-            display: flex;
-            gap: 12px;
+        .search-wrap {
+            position: relative;
+            max-width: 320px;
+            width: 100%;
         }
 
-        .btn {
-            padding: 10px 18px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
         }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 34px;
+            border-radius: 999px;
+            border: 1.5px solid var(--accent);
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            outline: none;
+        }
+        .search-input:focus { box-shadow: 0 0 0 3px rgba(63,114,175,0.14); }
 
         .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
             background: var(--accent);
             color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+        .add-btn:hover { opacity: 0.88; }
+
+        .table-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
         }
 
-        .search-btn {
-            background: var(--cream);
+        .table-sub-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
             color: var(--accent);
-            border: 1px solid var(--accent);
         }
 
-        .filter {
-            background: var(--cream);
-            border: 1px solid var(--accent);
-            padding: 8px 14px;
+        .filter-select {
+            border: 1.5px solid var(--accent);
             border-radius: 999px;
+            padding: 7px 14px;
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
             font-size: 0.8rem;
-            color: var(--accent);
+            color: #1a2a3a;
+            cursor: pointer;
+            outline: none;
+            min-width: 170px;
         }
+        .filter-select:focus { box-shadow: 0 0 0 3px rgba(63,114,175,0.14); }
 
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
+        /* TABLE */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -113,24 +146,68 @@
             overflow: hidden;
         }
 
+        .data-table th,
+        .data-table td {
+            text-align: center;
+            padding: 14px;
+        }
+
         .data-table th {
             background: var(--accent);
             color: white;
-            padding: 14px;
-            text-align: left;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .data-table td {
-            padding: 14px;
             border-top: 1px solid var(--soft-blue);
+            font-size: 0.87rem;
         }
 
-        .edit-row {
-            color: var(--accent);
-            cursor: pointer;
+        .data-table tbody tr:hover td { background: rgba(219,226,239,0.45); }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
+        .badge-active   { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+        /* ── CLICKABLE CUSTOMER NAME ── */
+        .customer-name-link {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1.5px solid transparent;
+            transition: border-color 0.18s, color 0.18s;
+        }
+        .customer-name-link:hover {
+            border-bottom-color: var(--accent);
+            color: #2c5490;
+        }
+
+        .edit-cell {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #4a5a6a;
+            font-size: 0.88rem;
+        }
+        .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
     </style>
 </head>
 
@@ -138,86 +215,151 @@
 
 <header>
     <a th:href="@{/}" class="back-btn">← Back</a>
-    <h2 style="color: var(--accent);">Member Detail</h2>
+    <h2 style="color: var(--accent); font-family: 'Playfair Display', serif;">Member Detail</h2>
 </header>
 
 <div class="content">
 
     <div class="table-title" th:text="${member.tableName}">Customer</div>
 
-    <!-- ACTION BAR (restored properly) -->
-    <div class="actions">
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+        <form th:action="@{/member/{id}/search(id=${member.memberNumber})}"
+              method="get"
+              class="search-wrap">
+            <span class="search-icon">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+                    <circle cx="9" cy="9" r="7" stroke="#3F72AF" stroke-width="2"/>
+                    <line x1="14.5" y1="14.5" x2="19" y2="19"
+                          stroke="#3F72AF" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <input type="text" name="query" class="search-input"
+                   placeholder="Search customer…"
+                   th:value="${searchQuery}"
+                   autocomplete="off" />
+        </form>
 
-        <div class="left-actions">
-            <button class="btn add-btn">+ Add Customer</button>
-            <button class="btn search-btn">🔍 Search Customer</button>
-        </div>
-
-        <!-- FILTER DROPDOWN (unchanged) -->
-        <select class="filter">
-            <option selected>Delhi</option>
-            <option>Mumbai</option>
-            <option>Bangalore</option>
-            <option>Chennai</option>
-            <option>Kolkata</option>
-            <option>Pune</option>
-            <option>Hyderabad</option>
-            <option>Jaipur</option>
-            <option>Lucknow</option>
-            <option>Ahmedabad</option>
-        </select>
-
+        <a th:href="@{/member/3/add-customer}" class="add-btn">
+            + Add Customer
+        </a>
     </div>
 
-    <!-- TABLE (hardcoded kept as requested) -->
-    <div class="table-wrapper">
-        <table class="data-table">
+    <!-- TABLE HEADER ROW -->
+    <div class="table-header-row">
+        <span class="table-sub-label">All Customers</span>
 
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
+        <form th:action="@{/member/{id}(id=${member.memberNumber})}"
+              method="post" id="cityForm">
+            <input type="hidden" id="cityPageHidden" name="cityPage" th:value="${cityPage}" />
+            <input type="hidden" id="pageNavHidden"  name="pageNav"  value="false" />
 
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>John Doe</td>
-                    <td>Active</td>
-                    <td>User</td>
-                    <td class="edit-row">✎ Edit</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Jane Smith</td>
-                    <td>Inactive</td>
-                    <td>Admin</td>
-                    <td class="edit-row">✎ Edit</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>Alex Brown</td>
-                    <td>Active</td>
-                    <td>Manager</td>
-                    <td class="edit-row">✎ Edit</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>Chris Evans</td>
-                    <td>Pending</td>
-                    <td>Staff</td>
-                    <td class="edit-row">✎ Edit</td>
-                </tr>
-            </tbody>
+            <select name="city" class="filter-select" onchange="handleCityChange(this)">
+                <option value="" th:selected="${searchMode}">— Select City —</option>
 
-        </table>
+                <option th:if="${cityPage > 0}" value="__LOAD_PREV__"
+                        style="color:#3F72AF; font-style:italic; font-size:0.8rem;">
+                    ↑ Previous cities...
+                </option>
+
+                <option th:each="city : ${cities}"
+                        th:value="${city}"
+                        th:text="${city}"
+                        th:selected="${!searchMode and city == selectedCity}">
+                </option>
+
+                <option th:if="${hasMoreCities}" value="__LOAD_MORE__"
+                        style="color:#3F72AF; font-style:italic; font-size:0.8rem;">
+                    ↓ Load more cities...
+                </option>
+            </select>
+        </form>
     </div>
+
+    <!-- TABLE -->
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="c, stat : ${customers}">
+            <td th:text="${stat.index + 1}"></td>
+
+            <!--
+                ✅ CLICKABLE NAME
+                → GET /member/3/customer?firstName=MARY&lastName=SMITH
+                → handled by CustomerDetailController
+            -->
+            <td>
+                <a th:href="@{/member/3/customer(
+                        firstName=${c.fullName.split(' ')[0]},
+                        lastName=${c.fullName.split(' ').length > 1 ? c.fullName.split(' ')[1] : ''})}"
+                   class="customer-name-link"
+                   th:text="${c.fullName}">
+                    Mary Smith
+                </a>
+            </td>
+
+            <td th:text="${c.email}"></td>
+            <td>
+                <span th:if="${c.active}"    class="badge badge-active">Active</span>
+                <span th:unless="${c.active}" class="badge badge-inactive">Inactive</span>
+            </td>
+            <td>
+                <a th:href="@{/member/3/edit-customer(firstName=${c.fullName.split(' ')[0]}, lastName=${c.fullName.split(' ')[1]})}"
+                   class="edit-cell" style="text-decoration:none;">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+                        <path d="M14.85 2.15a2 2 0 0 1 2.83 2.83L6.5 16.16l-4 1 1-4L14.85 2.15z"
+                              stroke="#3F72AF" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Edit
+                </a>
+            </td>
+        </tr>
+
+        <tr th:if="${customers != null and #lists.isEmpty(customers)}">
+            <td colspan="5">
+                <div class="empty-state">
+                    <div class="icon">🔍</div>
+                    <p>No records found.</p>
+                </div>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
 
 </div>
+
+<script th:inline="javascript">
+    var currentCityPage = /*[[${cityPage}]]*/ 0;
+
+    function handleCityChange(sel) {
+        var v = sel.value;
+        if (v === '__LOAD_MORE__') {
+            document.getElementById('cityPageHidden').value = currentCityPage + 1;
+            document.getElementById('pageNavHidden').value  = 'true';
+            sel.value = '';
+            document.getElementById('cityForm').submit();
+        } else if (v === '__LOAD_PREV__') {
+            document.getElementById('cityPageHidden').value = currentCityPage - 1;
+            document.getElementById('pageNavHidden').value  = 'true';
+            sel.value = '';
+            document.getElementById('cityForm').submit();
+        } else {
+            document.getElementById('cityForm').submit();
+        }
+    }
+</script>
 
 </body>
 </html>
