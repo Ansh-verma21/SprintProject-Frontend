@@ -28,7 +28,7 @@ public class ActorController {
     // =========================
     // ✅ PAGE 2 → ACTOR LIST
     // =========================
-    @GetMapping("/member/1/actors")
+    @GetMapping({"/actors"})
     public String getActors(
             @RequestParam(value = "firstName", required = false) String firstName,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -85,7 +85,7 @@ public class ActorController {
     // =========================
     // ✅ PAGE 3 → ACTOR + FILMS
     // =========================
-    @GetMapping("/member/1/actor-films")
+    @GetMapping("/actors/films")
     public String getActorFilms(
             @RequestParam String firstName,
             @RequestParam(value = "page", defaultValue = "0") int page,
