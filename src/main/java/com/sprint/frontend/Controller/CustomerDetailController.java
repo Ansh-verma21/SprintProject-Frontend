@@ -15,18 +15,16 @@ public class CustomerDetailController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String BASE_URL = "http://localhost:8000";
+    private static final int PAGE_SIZE = 10;
 
     /**
-     * GET /member/3/customer?firstName=SYLVIA&lastName=ORTIZ
-     *
-     * Uses ONLY two endpoints (no multi-step traversal needed):
-     *   1. /customers/search/findByFirstNameAndLastName  →  name, email, phone, address, city
-     *   2. /customers/{id}/rentals                       →  rentalDate, returnDate, film title
+     * GET /member/3/customer?firstName=SYLVIA&lastName=ORTIZ&page=0
      */
     @GetMapping("/member/3/customer")
     public String customerDetail(
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName")  String lastName,
+            @RequestParam(value = "page", defaultValue = "0") int page,
             Model model) {
 
         try {
@@ -47,23 +45,18 @@ public class CustomerDetailController {
 
             JsonNode customer = content.get(0);
 
-            // Full name
             String fullName = customer.path("firstName").asText()
                     + " " + customer.path("lastName").asText();
 
-            // Email
             String email = customer.path("email").asText("");
 
-            // Phone — lives inside address object
             JsonNode addrNode = customer.path("address");
             String phone   = addrNode.path("phone").asText("N/A");
             String address = addrNode.path("address").asText("");
             String city    = addrNode.path("city").path("city").asText("");
-            // address + city (no country, as requested)
             String fullAddress = address.isEmpty() ? city
                     : (city.isEmpty() ? address : address + ", " + city);
 
-            // Extract customerId from self link: "http://localhost:8000/customers/120"
             int customerId = extractCustomerIdFromLinks(customer.path("links"));
 
             if (customerId <= 0) {
@@ -71,12 +64,10 @@ public class CustomerDetailController {
                 return "Customerdetail";
             }
 
-            // ── STEP 2: Get rentals ───────────────────────────────────────────
-            // Response: content[].rentalDate, returnDate
-            //           content[].content[].value.film.title  (rel = "inventory")
+            // ── STEP 2: Get ALL rentals ───────────────────────────────────────
             List<Map<String, String>> allRentals = parseRentals(customerId);
 
-            // Latest 3 sorted DESC by rentalDate
+            // Latest 3 sorted DESC
             List<Map<String, String>> latestRentals = allRentals.stream()
                     .sorted(Comparator.comparing(
                             (Map<String, String> r) -> r.getOrDefault("rentalDate", ""),
@@ -84,12 +75,45 @@ public class CustomerDetailController {
                     .limit(3)
                     .toList();
 
+            // ── STEP 3: Paginate allRentals ───────────────────────────────────
+            int totalRecords = allRentals.size();
+            int totalPages   = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+
+            // Clamp page to valid range
+            if (page < 0) page = 0;
+            if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+
+            int fromIndex = page * PAGE_SIZE;
+            int toIndex   = Math.min(fromIndex + PAGE_SIZE, totalRecords);
+
+            List<Map<String, String>> pagedRentals = totalRecords > 0
+                    ? allRentals.subList(fromIndex, toIndex)
+                    : Collections.emptyList();
+
+            // Page number list for Thymeleaf iteration (0-based internally, 1-based display)
+            List<Integer> pageNumbers = new ArrayList<>();
+            for (int i = 0; i < totalPages; i++) pageNumbers.add(i);
+
+            // ── Pass everything to the view ───────────────────────────────────
             model.addAttribute("fullName",      fullName);
             model.addAttribute("email",         email);
             model.addAttribute("phone",         phone);
             model.addAttribute("fullAddress",   fullAddress);
+            model.addAttribute("firstName",     firstName);
+            model.addAttribute("lastName",      lastName);
             model.addAttribute("latestRentals", latestRentals);
-            model.addAttribute("allRentals",    allRentals);
+            model.addAttribute("allRentals",    allRentals);       // still needed if referenced
+            model.addAttribute("pagedRentals",  pagedRentals);
+            model.addAttribute("currentPage",   page);
+            model.addAttribute("totalPages",    totalPages);
+            model.addAttribute("totalRecords",  totalRecords);
+            model.addAttribute("pageNumbers",   pageNumbers);
+            model.addAttribute("fromRecord",    totalRecords > 0 ? fromIndex + 1 : 0);
+            model.addAttribute("toRecord",      toIndex);
+            model.addAttribute("hasPrev",       page > 0);
+            model.addAttribute("hasNext",       page < totalPages - 1);
+            model.addAttribute("prevPage",      page - 1);
+            model.addAttribute("nextPage",      page + 1);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -99,17 +123,12 @@ public class CustomerDetailController {
         return "Customerdetail";
     }
 
-    // ── HELPERS ────────────────────────────────────────────────────────────────
+    // ── HELPERS ───────────────────────────────────────────────────────────────
 
-    /**
-     * Extract the numeric ID from the "self" link inside a "links" array.
-     * e.g. href = "http://localhost:8000/customers/120" → 120
-     */
     private int extractCustomerIdFromLinks(JsonNode linksNode) {
         for (JsonNode link : linksNode) {
             if ("self".equals(link.path("rel").asText())) {
                 String href = link.path("href").asText("");
-                // Remove projection template like {?projection}
                 href = href.replaceAll("\\{.*?}", "");
                 String[] parts = href.split("/");
                 if (parts.length > 0) {
@@ -122,20 +141,6 @@ public class CustomerDetailController {
         return -1;
     }
 
-    /**
-     * Parse GET /customers/{id}/rentals
-     *
-     * The response "content" array has items like:
-     * {
-     *   "rentalDate": "2005-05-25T09:47:31",
-     *   "returnDate": "2005-05-31T10:20:31",
-     *   "content": [
-     *     { "rel": "inventory", "value": { "film": { "title": "TEEN APOLLO" } } },
-     *     { "rel": "staff", ... },
-     *     { "rel": "customer", ... }
-     *   ]
-     * }
-     */
     private List<Map<String, String>> parseRentals(int customerId) {
         List<Map<String, String>> result = new ArrayList<>();
         try {
@@ -148,7 +153,6 @@ public class CustomerDetailController {
                 String rentalDate = safeDate(rental.path("rentalDate").asText(""));
                 String returnDate = safeDate(rental.path("returnDate").asText(""));
 
-                // Film title lives in the embedded "content" array under rel="inventory"
                 String filmTitle = "N/A";
                 for (JsonNode embedded : rental.path("content")) {
                     if ("inventory".equals(embedded.path("rel").asText())) {
@@ -170,7 +174,6 @@ public class CustomerDetailController {
         return result;
     }
 
-    /** Trim datetime to date only: "2005-05-25T09:47:31" → "2005-05-25" */
     private String safeDate(String dt) {
         if (dt == null || dt.isBlank()) return "";
         return dt.contains("T") ? dt.substring(0, dt.indexOf('T')) : dt;

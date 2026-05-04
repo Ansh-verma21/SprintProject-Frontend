@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Member ' + member.memberNumber + ' - Detail'}">Member Detail</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cream:     #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent:    #3F72AF;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: #1a2a3a;
+        }
+
+        header {
+            background: var(--soft-blue);
+            padding: 20px 50px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--cream);
+            font-size: 0.85rem;
+        }
+
+        .content {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 40px;
+            background: var(--soft-blue);
+            border-radius: 20px;
+        }
+
+        .table-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 28px;
+            color: var(--accent);
+        }
+
+        .action-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .filter-select {
+            width: 100%;
+            border: 1.5px solid var(--accent);
+            border-radius: 999px;
+            padding: 10px 16px;
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            color: #1a2a3a;
+            cursor: pointer;
+            outline: none;
+        }
+        .filter-select:focus { box-shadow: 0 0 0 3px rgba(63,114,175,0.14); }
+
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+        .add-btn:hover { opacity: 0.88; }
+
+        .table-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-sub-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .pager {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pager-btn {
+            border: 1.5px solid var(--accent);
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            color: #1a2a3a;
+            cursor: pointer;
+        }
+        .pager-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-badge {
+            font-size: 0.75rem;
+            color: #1a2a3a;
+            background: var(--cream);
+            border: 1px solid var(--accent);
+            border-radius: 999px;
+            padding: 6px 12px;
+        }
+
+        /* TABLE */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--cream);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: center;
+            padding: 14px;
+        }
+
+        .data-table th {
+            background: var(--accent);
+            color: white;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            border-top: 1px solid var(--soft-blue);
+            font-size: 0.87rem;
+        }
+
+        .data-table tbody tr:hover td { background: rgba(219,226,239,0.45); }
+
+        .store-link {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1.5px solid transparent;
+            transition: border-color 0.18s, color 0.18s;
+        }
+        .store-link:hover {
+            border-bottom-color: var(--accent);
+            color: #2c5490;
+        }
+
+        .edit-cell {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #4a5a6a;
+            font-size: 0.88rem;
+        }
+        .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a th:href="@{/}" class="back-btn">← Back </a>
+    <h2 style="color: var(--accent); font-family: 'Playfair Display', serif;">Member Detail</h2>
+</header>
+
+<div class="content">
+
+    <div class="table-title" th:text="${member.tableName}">Store</div>
+
+    <div class="action-bar">
+        <form th:action="@{/member/5}" method="get" class="search-wrap" id="cityForm">
+            <input type="hidden" name="page" value="0" />
+            <select name="city" class="filter-select" onchange="this.form.submit()">
+                <option th:each="c : ${cities}"
+                        th:value="${c}"
+                        th:text="${c}"
+                        th:selected="${c == selectedCity}">
+                </option>
+            </select>
+        </form>
+
+        <a th:href="@{/member/5/add-store}" class="add-btn">+ Add Store</a>
+    </div>
+
+    <div class="table-header-row">
+        <span class="table-sub-label">Stores by City</span>
+
+        <div class="pager">
+            <form th:action="@{/member/5}" method="get">
+                <input type="hidden" name="city" th:value="${cityQuery}" />
+                <input type="hidden" name="page" th:value="${page - 1}" />
+                <button class="pager-btn" th:disabled="${page == 0}">Prev</button>
+            </form>
+            <span class="page-badge" th:text="${'Page ' + (page + 1)}">Page 1</span>
+            <form th:action="@{/member/5}" method="get">
+                <input type="hidden" name="city" th:value="${cityQuery}" />
+                <input type="hidden" name="page" th:value="${page + 1}" />
+                <button class="pager-btn" th:disabled="${!hasMore}">Next</button>
+            </form>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Store</th>
+            <th>Address</th>
+            <th>District</th>
+            <th>City</th>
+            <th>Manager</th>
+            <th>Last Update</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="s, stat : ${stores}">
+            <td th:text="${stat.index + 1}"></td>
+            <td>
+                <a th:href="@{/member/5/store(storeId=${s.storeId})}"
+                   class="store-link"
+                   th:text="${'Store ' + s.storeId}">
+                    Store
+                </a>
+            </td>
+            <td th:text="${s.address}"></td>
+            <td th:text="${s.district}"></td>
+            <td th:text="${s.city}"></td>
+            <td th:text="${s.managerName}"></td>
+            <td th:text="${s.lastUpdate}"></td>
+            <td>
+                <a th:href="@{/member/5/edit-store(storeId=${s.storeId})}"
+                   class="edit-cell">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+                        <path d="M14.85 2.15a2 2 0 0 1 2.83 2.83L6.5 16.16l-4 1 1-4L14.85 2.15z"
+                              stroke="#3F72AF" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Edit
+                </a>
+            </td>
+        </tr>
+
+        <tr th:if="${stores != null and #lists.isEmpty(stores)}">
+            <td colspan="8">
+                <div class="empty-state">
+                    <div class="icon">?</div>
+                    <p>No stores found for this city.</p>
+                </div>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Films by Language</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --cream: #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent: #3F72AF;
+            --text-dark: #1a2a3a;
+            --text-mid: #4a5a6a;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--cream);
+            border-bottom: 2px solid var(--soft-blue);
+            padding: 30px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--cream);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px 60px;
+        }
+
+        .search-box {
+            background: var(--soft-blue);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .search-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .search-field label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .search-field input {
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(63,114,175,0.2);
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(63,114,175,0.12);
+        }
+
+        .search-btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .search-btn:hover {
+            opacity: 0.88;
+        }
+
+        /* ── RESULTS TABLE ── */
+        .table-wrap {
+            background: var(--soft-blue);
+            border-radius: 18px;
+            padding: 28px 32px;
+            box-shadow: 0 2px 12px rgba(63,114,175,0.08);
+        }
+
+        .results-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 18px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--cream);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px 18px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            border-top: 1px solid var(--soft-blue);
+            font-size: 0.88rem;
+            color: var(--text-dark);
+        }
+
+        .data-table tbody tr:hover td {
+            background: rgba(219,226,239,0.5);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6a7a8a;
+            font-size: 0.9rem;
+        }
+
+        .error-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.84rem;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="header-left">
+        <div class="header-dot"></div>
+        <h1>Search Films by Language</h1>
+    </div>
+    <a th:href="@{/languages}" class="back-btn">← Back to Languages</a>
+</header>
+
+<!-- PAGE CONTENT -->
+<div class="page">
+
+    <!-- SEARCH BOX -->
+    <div class="search-box">
+        <div class="search-field">
+            <label for="query">Language Name</label>
+            <form method="get" action="/languages/search" style="display: flex; gap: 12px; width: 100%;">
+                <input type="text" id="query" name="query" th:value="${query}"
+                       placeholder="e.g. English, Spanish..." required
+                       style="flex: 1;"/>
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ERROR BANNER -->
+    <div class="error-banner" th:if="${error}">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
+            <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+            <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+        </svg>
+        <span th:text="${error}">Something went wrong.</span>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div class="table-wrap">
+        <div class="results-title" th:text="${'Films in ' + query}">Films in Language</div>
+
+        <table class="data-table" th:if="${hasResults and films != null and !films.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Release Year</th>
+                    <th>Language</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="film : ${films}">
+                    <td th:text="${film['id']}">1</td>
+                    <td th:text="${film['title']}">Film Title</td>
+                    <td th:text="${film['releaseYear']}">2024</td>
+                    <td th:text="${film['language']}">English</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- NO RESULTS STATE -->
+        <div class="no-results" th:if="${!hasResults}">
+            <p>No films found for language "<span th:text="${query}">Language</span>". Try another search.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
