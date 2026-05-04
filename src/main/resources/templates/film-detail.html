@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent: #3F72AF;
+            --accent-dark: #2d5a8e;
+            --text-dark: #1a2a3a;
+            --text-mid: #4a5a6a;
+            --text-light: #8a9aaa;
+            --white: #ffffff;
+            --border: #d0d8e8;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ── NAV BAR ── */
+        header {
+            background: var(--cream);
+            border-bottom: 2px solid var(--soft-blue);
+            padding: 18px 48px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-dot {
+            width: 11px; height: 11px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .nav-actions { margin-left: auto; }
+
+        .btn-outline {
+            padding: 8px 18px;
+            border: 1.5px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.18s;
+        }
+        .btn-outline:hover { background: var(--soft-blue); }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 40px 80px;
+        }
+
+        /* ── FILM TITLE BLOCK ── */
+        .film-hero {
+            margin-bottom: 36px;
+        }
+
+        .film-hero .label {
+            font-size: 0.68rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .film-hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.25;
+        }
+
+        /* ── DETAIL CARD ── */
+        .detail-card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 28px;
+        }
+
+        .detail-inner {
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        /* ── META GRID ── */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+        }
+
+        .meta-item {
+            padding: 20px 26px;
+            border-bottom: 1px solid var(--soft-blue);
+            border-right: 1px solid var(--soft-blue);
+        }
+
+        .meta-item:nth-child(2n) { border-right: none; }
+        .meta-item:nth-last-child(-n+2) { border-bottom: none; }
+
+        .meta-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            background: var(--soft-blue);
+            color: var(--accent);
+        }
+
+        /* Description spans full width */
+        .meta-full {
+            padding: 20px 26px;
+            border-top: 1px solid var(--soft-blue);
+        }
+
+        .meta-full .meta-label { margin-bottom: 8px; }
+
+        .meta-full .meta-value {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-mid);
+            line-height: 1.65;
+        }
+
+        /* ── LIST SECTIONS ── */
+        .section-card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-inner {
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--accent);
+            padding: 12px 22px;
+        }
+
+        .section-header h3 {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .section-list {
+            list-style: none;
+        }
+
+        .section-list li {
+            padding: 12px 22px;
+            border-bottom: 1px solid var(--soft-blue);
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-list li:last-child { border-bottom: none; }
+
+        .section-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+    <div class="header-dot"></div>
+    <h1>Film Rental</h1>
+    <div class="nav-actions">
+        <a href="/member/1" class="btn-outline">← Back to Films</a>
+    </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+    <!-- Film Title -->
+    <div class="film-hero">
+        <p class="label">Film Detail</p>
+        <h2 th:text="${film.title}">Film Title</h2>
+    </div>
+
+    <!-- Core Info Card -->
+    <div class="detail-card">
+        <div class="detail-inner">
+
+            <!-- 2-col meta grid -->
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="meta-label">Release Year</div>
+                    <div class="meta-value">
+                        <span class="badge" th:text="${film.releaseYear}"></span>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Rating</div>
+                    <div class="meta-value">
+                        <span class="badge" th:text="${film.rating}"></span>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Length</div>
+                    <div class="meta-value" th:text="${film.length + ' mins'}"></div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Language</div>
+                    <div class="meta-value" th:text="${film.language}"></div>
+                </div>
+            </div>
+
+            <!-- Description full-width -->
+            <div class="meta-full">
+                <div class="meta-label">Description</div>
+                <div class="meta-value" th:text="${film.description}"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Actors -->
+    <div class="section-card">
+        <div class="section-inner">
+            <div class="section-header"><h3>Actors</h3></div>
+            <ul class="section-list">
+                <li th:each="a : ${film.actors}" th:text="${a}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-card">
+        <div class="section-inner">
+            <div class="section-header"><h3>Categories</h3></div>
+            <ul class="section-list">
+                <li th:each="c : ${film.categories}" th:text="${c}"></li>
+            </ul>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
