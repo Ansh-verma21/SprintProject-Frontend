@@ -1,18 +1,20 @@
 package com.sprint.frontend.Controller;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
+
 import com.sprint.frontend.DTO.FilmDTO;
 import com.sprint.frontend.DTO.FilmDetailDTO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 @Controller
 public class FilmController {
@@ -110,5 +112,73 @@ public class FilmController {
 
         return "film";
     }
-   
+    @GetMapping("/member/1/film")
+    public String getFilmDetails(@RequestParam Long id, Model model) {
+
+        try {
+
+            FilmDetailDTO dto = new FilmDetailDTO();
+
+            // 🔹 1. Film basic data
+            String filmJson = restTemplate.getForObject(BASE_URL + "/films/" + id, String.class);
+            JsonNode film = objectMapper.readTree(filmJson);
+
+            dto.setTitle(film.path("title").asText());
+            dto.setDescription(film.path("description").asText());
+            dto.setReleaseYear(film.path("releaseYear").asText());
+            dto.setRating(film.path("rating").asText());
+            dto.setLength(film.path("length").asInt());
+
+            // 🔹 2. Language
+            String langJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/language", String.class);
+            JsonNode lang = objectMapper.readTree(langJson);
+            dto.setLanguage(lang.path("name").asText());
+
+            // 🔹 3. Actors
+            String actorJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/actors", String.class);
+            JsonNode actorRoot = objectMapper.readTree(actorJson);
+
+            List<String> actors = new ArrayList<>();
+            for (JsonNode a : actorRoot.path("content")) {
+                actors.add(a.path("firstName").asText() + " " + a.path("lastName").asText());
+            }
+            dto.setActors(actors);
+
+            // 🔹 4. Categories
+            String catJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/categories", String.class);
+            JsonNode catRoot = objectMapper.readTree(catJson);
+
+            List<String> categories = new ArrayList<>();
+            for (JsonNode c : catRoot.path("content")) {
+                categories.add(c.path("name").asText());
+            }
+            dto.setCategories(categories);
+
+            model.addAttribute("film", dto);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Failed to load film details");
+        }
+
+        return "film-detail";
+    }
+
+    private Long extractId(JsonNode linksNode) {
+        for (JsonNode link : linksNode) {
+            if ("self".equals(link.path("rel").asText())) {
+
+                String href = link.path("href").asText();
+
+                if (href.contains("{")) {
+                    href = href.substring(0, href.indexOf("{"));
+                }
+
+                return Long.parseLong(
+                        href.substring(href.lastIndexOf("/") + 1)
+                );
+            }
+        }
+        return null;
+    }
 }
