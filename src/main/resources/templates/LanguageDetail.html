@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title
+      th:text="${name != null ? name + ' — Language Profile' : 'Language Profile'}"
+    >
+      Language Profile
+    </title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --cream: #f9f7f7;
+        --soft-blue: #dbe2ef;
+        --accent: #3f72af;
+        --accent-dk: #2c5490;
+        --text: #1a2a3a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--cream);
+        font-family: "DM Sans", sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ── HEADER ── */
+      header {
+        background: var(--soft-blue);
+        padding: 18px 50px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 2px solid var(--accent);
+      }
+
+      .back-btn {
+        text-decoration: none;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--cream);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition:
+          background 0.18s,
+          color 0.18s;
+      }
+      .back-btn:hover {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      header h2 {
+        font-family: "Playfair Display", serif;
+        color: var(--accent);
+        font-size: 1.35rem;
+      }
+
+      /* ── PAGE WRAP ── */
+      .page-wrap {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 24px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      /* ── SECTION HEADING ── */
+      .section-heading {
+        font-family: "Playfair Display", serif;
+        font-size: 1.3rem;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+
+      /* ── INFO CARD ── */
+      .info-card {
+        background: var(--soft-blue);
+        border-radius: 18px;
+        padding: 28px 32px;
+      }
+
+      .info-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--cream);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .info-table th,
+      .info-table td {
+        padding: 14px 18px;
+        text-align: left;
+        font-size: 0.88rem;
+      }
+
+      .info-table th {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.76rem;
+        width: 160px;
+      }
+
+      .info-table td {
+        border-top: 1px solid var(--soft-blue);
+        color: var(--text);
+      }
+
+      .info-table tr:first-child td,
+      .info-table tr:first-child th {
+        border-top: none;
+      }
+
+      /* ── ACTION BUTTONS ── */
+      .actions {
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 11px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-size: 0.86rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        border: none;
+        font-family: "DM Sans", sans-serif;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        opacity: 0.88;
+      }
+
+      .btn-secondary {
+        border: 1.5px solid var(--accent);
+        background: transparent;
+        color: var(--accent);
+      }
+
+      .btn-secondary:hover {
+        background: var(--accent);
+        color: white;
+      }
+
+      /* ── ERROR BOX ── */
+      .error-box {
+        background: #fee2e2;
+        color: #991b1b;
+        border-radius: 12px;
+        padding: 20px 24px;
+        font-size: 0.9rem;
+      }
+
+      /* ── FILMS SECTION ── */
+      .films-wrap {
+        background: var(--soft-blue);
+        border-radius: 18px;
+        padding: 28px 32px;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--cream);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 14px 18px;
+        text-align: left;
+        font-size: 0.88rem;
+      }
+
+      .data-table th {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-size: 0.76rem;
+      }
+
+      .data-table td {
+        border-top: 1px solid var(--soft-blue);
+        color: var(--text);
+      }
+
+      .data-table tbody tr:hover td {
+        background: rgba(219, 226, 239, 0.5);
+      }
+
+      .no-films {
+        text-align: center;
+        padding: 40px;
+        color: #6a7a8a;
+        font-size: 0.9rem;
+        background: var(--cream);
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <header>
+      <a th:href="@{/languages}" class="back-btn">← Back</a>
+      <h2>Films of this Language</h2>
+    </header>
+
+    <div class="page-wrap">
+      <!-- ERROR STATE -->
+      <div th:if="${error}" class="error-box">
+        ⚠ <span th:text="${error}">Something went wrong.</span>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main" th:if="${error == null}">
+        <!-- LANGUAGE INFO TABLE -->
+        <div class="info-card">
+          <div class="section-heading">📚 Language Information</div>
+
+          <table class="info-table">
+            <tbody>
+              <tr>
+                <th>Name</th>
+                <td th:text="${name}">English</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- FILMS IN THIS LANGUAGE -->
+        <div class="films-wrap">
+          <div class="section-heading">
+            🎬 Films in <span th:text="${name}">Language</span> (<span
+              th:text="${filmCount}"
+              >0</span
+            >)
+          </div>
+
+          <table
+            class="data-table"
+            th:if="${films != null and !films.isEmpty()}"
+          >
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Release Year</th>
+                <th>Rating</th>
+                <th>Rental Rate</th>
+                <th>Replacement Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="film : ${films}">
+                <td th:text="${film['title']}">Film Title</td>
+                <td th:text="${film['releaseYear']}">2024</td>
+                <td th:text="${film['rating']}">PG</td>
+                <td
+                  th:text="${'$' + #numbers.formatDecimal(film['rentalRate'], 1, 2)}"
+                >
+                  $0.00
+                </td>
+                <td
+                  th:text="${'$' + #numbers.formatDecimal(film['replacementCost'], 1, 2)}"
+                >
+                  $0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- PAGINATION -->
+          <div
+            th:if="${totalPages > 1}"
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 16px;
+              margin-top: 18px;
+            "
+          >
+            <a
+              th:if="${hasPrev}"
+              th:href="@{/languages/{id}(id=${id}, page=${currentPage - 1})}"
+              class="btn btn-secondary"
+              >← Prev</a
+            >
+            <span th:if="${!hasPrev}" style="color: #a0aab4; font-size: 0.85rem"
+              >← Prev</span
+            >
+
+            <span style="font-size: 0.85rem; color: var(--text-mid)">
+              Page <span th:text="${currentPage + 1}">1</span> of
+              <span th:text="${totalPages}">1</span>
+            </span>
+
+            <a
+              th:if="${hasNext}"
+              th:href="@{/languages/{id}(id=${id}, page=${currentPage + 1})}"
+              class="btn btn-secondary"
+              >Next →</a
+            >
+            <span th:if="${!hasNext}" style="color: #a0aab4; font-size: 0.85rem"
+              >Next →</span
+            >
+          </div>
+
+          <div class="no-films" th:if="${films == null or films.isEmpty()}">
+            <p>No films available in this language.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Language</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cream:     #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent:    #3F72AF;
+            --text-dark: #1a2a3a;
+            --text-mid:  #4a5a6a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--soft-blue);
+            padding: 20px 50px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--cream);
+            font-size: 0.85rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .back-btn:hover { background: var(--accent); color: var(--cream); }
+
+        header h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .page {
+            max-width: 620px;
+            margin: 46px auto;
+            padding: 0 20px 80px;
+        }
+
+        .card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            padding: 40px 44px;
+            box-shadow: 0 6px 28px rgba(63,114,175,0.09);
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .card-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            margin-bottom: 32px;
+        }
+
+        /* ── FORM ── */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 24px;
+        }
+
+        label.field-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        input[type="text"] {
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(63,114,175,0.2);
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(63,114,175,0.12);
+        }
+        input.field-error {
+            border-color: #f87171 !important;
+            box-shadow: 0 0 0 3px rgba(248,113,113,0.15) !important;
+        }
+        input::placeholder { color: #a0aab4; }
+
+        .field-err-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: #dc2626;
+            background: #fee2e2;
+            border-radius: 8px;
+            padding: 7px 10px;
+        }
+
+        /* ── SUBMIT ── */
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .submit-btn:hover  { opacity: 0.88; }
+        .submit-btn:active { transform: scale(0.99); }
+
+        /* ── GENERAL ERROR BANNER ── */
+        .error-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.84rem;
+            color: #991b1b;
+        }
+
+        /* ── SUCCESS OVERLAY ── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26,42,58,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .popup {
+            background: var(--cream);
+            border-radius: 22px;
+            padding: 44px 48px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(63,114,175,0.22);
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .check-circle {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: #d1fae5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .popup-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .popup-name {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .id-tag {
+            display: inline-block;
+            border: 1.5px solid #f87171;
+            border-radius: 10px;
+            padding: 8px 22px;
+            margin-bottom: 28px;
+        }
+        .id-tag .id-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #8a9ab0;
+            margin-bottom: 3px;
+        }
+        .id-tag .id-value {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #dc2626;
+            letter-spacing: 0.06em;
+        }
+        .id-tag .id-note {
+            font-size: 0.68rem;
+            color: #8a9ab0;
+            margin-top: 3px;
+        }
+
+        .popup-actions { display: flex; flex-direction: column; gap: 10px; }
+
+        .popup-btn-primary {
+            display: block;
+            padding: 11px;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .popup-btn-primary:hover { opacity: 0.88; }
+
+        .popup-btn-secondary {
+            display: block;
+            padding: 11px;
+            border-radius: 12px;
+            border: 1.5px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .popup-btn-secondary:hover { background: var(--accent); color: white; }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a th:href="@{/languages}" class="back-btn">← Back to Languages</a>
+    <h2>Add New Language</h2>
+</header>
+
+<!-- SUCCESS OVERLAY -->
+<div class="overlay" th:if="${success}">
+    <div class="popup">
+        <div class="check-circle">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="#059669" stroke-width="2.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="popup-title">Language Created!</div>
+        <div class="popup-name" th:text="${languageName}">Language Name</div>
+        <div class="popup-actions">
+            <a th:href="@{/languages}" class="popup-btn-primary">← Back to Languages</a>
+            <a th:href="@{/languages/add-language}" class="popup-btn-secondary">+ Add Another Language</a>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+    <div class="card">
+
+        <div class="card-title">New Language</div>
+        <div class="card-subtitle">Fill in the details below and click Create — we handle the rest.</div>
+
+        <!-- GENERAL ERROR BANNER -->
+        <div class="error-banner" th:if="${error}">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;margin-top:1px">
+                <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+                <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+            </svg>
+            <span th:text="${errorMsg}">Something went wrong.</span>
+        </div>
+
+        <form th:action="@{/languages/add-language}" method="post">
+
+            <!-- LANGUAGE NAME -->
+            <div class="form-group">
+                <label class="field-label" for="name">Language Name</label>
+                <input type="text" id="name" name="name"
+                       th:value="${v_name}" placeholder="e.g. English" required />
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit" class="submit-btn">Create Language</button>
+
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

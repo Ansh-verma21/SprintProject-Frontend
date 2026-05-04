@@ -196,6 +196,24 @@
             justify-content: center;
             color: var(--accent);
         }
+
+        .nav-btn {
+            text-decoration: none;
+            color: white;
+            background: var(--accent);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-left: auto;
+        }
+
+        .nav-btn:hover {
+            opacity: 0.88;
+        }
     </style>
 </head>
 
@@ -205,6 +223,7 @@
     <div class="header-dot"></div>
     <h1>Team Film Rental | Gp. - 6</h1>
     <p>6 Members</p>
+    <a th:href="@{/languages}" class="nav-btn">📚 Languages</a>
 </header>
 
 <main>
@@ -214,9 +233,9 @@
 
         <div th:each="member : ${members}">
 
-                <!-- clickable only member 3 and 5 -->
-                <a th:if="${member.memberNumber == 3 or member.memberNumber == 5}"
-               th:href="@{/member/{id}(id=${member.memberNumber})}"
+                <!-- clickable only member 3, 5, and 6 -->
+                <a th:if="${member.memberNumber == 3 or member.memberNumber == 5 or member.memberNumber == 6}"
+               th:href="${member.memberNumber == 6 ? '/languages' : '/member/' + member.memberNumber}"
                class="card">
 
                 <div class="card-strip"></div>
@@ -244,7 +263,7 @@
             </a>
 
             <!-- others -->
-            <div th:if="${member.memberNumber != 3 and member.memberNumber != 5}" class="card">
+            <div th:if="${member.memberNumber != 3 and member.memberNumber != 5 and member.memberNumber != 6}" class="card">
 
                 <div class="card-strip"></div>
 
