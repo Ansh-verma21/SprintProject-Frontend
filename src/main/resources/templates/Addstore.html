@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cream:     #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent:    #3F72AF;
+            --text-dark: #1a2a3a;
+            --text-mid:  #4a5a6a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--soft-blue);
+            padding: 20px 50px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--cream);
+            font-size: 0.85rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .back-btn:hover { background: var(--accent); color: var(--cream); }
+
+        header h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .page {
+            max-width: 620px;
+            margin: 46px auto;
+            padding: 0 20px 80px;
+        }
+
+        .card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            padding: 40px 44px;
+            box-shadow: 0 6px 28px rgba(63,114,175,0.09);
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .card-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        label.field-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(63,114,175,0.2);
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(63,114,175,0.12);
+        }
+        input.field-error {
+            border-color: #f87171 !important;
+            box-shadow: 0 0 0 3px rgba(248,113,113,0.15) !important;
+        }
+        input::placeholder { color: #a0aab4; }
+
+        .field-hint {
+            font-size: 0.72rem;
+            color: #8a9ab0;
+        }
+
+        .field-err-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: #dc2626;
+            background: #fee2e2;
+            border-radius: 8px;
+            padding: 7px 10px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1.5px solid rgba(63,114,175,0.15);
+            margin: 22px 0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .submit-btn:hover  { opacity: 0.88; }
+        .submit-btn:active { transform: scale(0.99); }
+
+        .error-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.84rem;
+            color: #991b1b;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26,42,58,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .popup {
+            background: var(--cream);
+            border-radius: 22px;
+            padding: 44px 48px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(63,114,175,0.22);
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .popup h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .popup p {
+            font-size: 0.88rem;
+            color: var(--text-mid);
+            margin-bottom: 18px;
+        }
+
+        .popup-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.86rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a th:href="@{/member/5}" class="back-btn">Back</a>
+    <h2>Add Store</h2>
+</header>
+
+<div class="page">
+    <div class="card">
+        <div class="card-title">Create Store</div>
+        <div class="card-subtitle">Provide address and manager staff ID.</div>
+
+        <div th:if="${error}" class="error-banner" th:text="${errorMsg}">
+            Failed to create store.
+        </div>
+
+        <form th:action="@{/member/5/add-store}" method="post">
+
+            <div class="form-group">
+                <label class="field-label">Address</label>
+                <input type="text" name="addressText"
+                       placeholder="Ex: 47 MySakila Drive"
+                       th:value="${v_addressText}"
+                       th:classappend="${addressError} ? ' field-error' : ''" />
+                <div class="field-hint">Must match existing address exactly.</div>
+                <div th:if="${addressError}" class="field-err-msg" th:text="${addressErrMsg}">
+                    Address not found.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="field-label">Manager Staff ID</label>
+                <input type="number" name="managerStaffId"
+                       placeholder="Ex: 1"
+                       th:value="${v_managerStaffId}"
+                       th:classappend="${managerError} ? ' field-error' : ''" />
+                <div class="field-hint">Must be valid staff ID.</div>
+                <div th:if="${managerError}" class="field-err-msg" th:text="${managerErrMsg}">
+                    Staff not found.
+                </div>
+            </div>
+
+            <hr class="divider" />
+
+            <button class="submit-btn" type="submit">Create Store</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${success}" class="overlay">
+    <div class="popup">
+        <h3>Store Created</h3>
+        <p th:text="${'Store ID: ' + storeId}">Store ID</p>
+        <a th:href="@{/member/5}" class="popup-btn">Back to Store Table</a>
+    </div>
+</div>
+
+</body>
+</html>
