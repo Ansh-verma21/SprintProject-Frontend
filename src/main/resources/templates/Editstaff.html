@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Staff</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --cream: #F9F7F7; --blue: #DBE2EF; --accent: #3F72AF; --dark: #1a2a3a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--dark); }
+        header { display: flex; align-items: center; gap: 16px; padding: 22px 40px; background: var(--blue); border-bottom: 2px solid var(--accent); }
+        .back-btn { color: var(--accent); border: 1px solid var(--accent); padding: 9px 16px; border-radius: 22px; text-decoration: none; background: white; }
+        .content { max-width: 920px; margin: 32px auto; padding: 36px; background: white; border-radius: 24px; box-shadow: 0 18px 36px rgba(63,114,175,0.1); }
+        .header-title { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--accent); margin-bottom: 16px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field label { font-size: 0.85rem; font-weight: 600; }
+        .field input, .field select { padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 14px; font-size: 0.95rem; }
+        .submit-btn { margin-top: 18px; padding: 13px 20px; border: none; border-radius: 999px; background: var(--accent); color: white; font-weight: 700; cursor: pointer; }
+        .message { border-radius: 18px; padding: 18px 20px; margin-bottom: 20px; }
+        .success-box { background: #d1fae5; color: #064e3b; }
+        .error-box { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+
+<body>
+<header>
+    <a th:href="@{/member/4}" class="back-btn">← Back to Staff</a>
+    <h1 class="header-title">Edit Staff</h1>
+</header>
+
+<div class="content">
+    <div th:if="${success}" class="message success-box">
+        <strong>Staff updated successfully!</strong>
+        <div th:text="${fullName}"></div>
+    </div>
+    <div th:if="${error}" class="message error-box">
+        <span th:text="${errorMsg}"></span>
+    </div>
+
+    <form th:action="@{/member/4/edit-staff}" method="post">
+        <input type="hidden" name="staffId" th:value="${staffId}" />
+        <div class="form-grid">
+            <div class="field">
+                <label for="firstName">First Name</label>
+                <input id="firstName" name="firstName" type="text" th:value="${firstName}" required />
+            </div>
+            <div class="field">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" name="lastName" type="text" th:value="${lastName}" required />
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" th:value="${email}" required />
+            </div>
+            <div class="field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" th:value="${username}" required />
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Leave blank to keep current password" />
+            </div>
+            <div class="field">
+                <label for="storeId">Store</label>
+                <select id="storeId" name="storeId" required>
+                    <option value="0">— Select Store —</option>
+                    <option th:each="store : ${stores}" th:value="${store.id}" th:text="${store.label}" th:selected="${store.id == selectedStoreId}"></option>
+                </select>
+            </div>
+            <div class="field" style="grid-column: span 2;">
+                <label for="addressText">Address</label>
+                <input id="addressText" name="addressText" type="text" th:value="${addressText}" required />
+                <div th:if="${addressError}" style="color:#9b1c1c; font-size:0.9rem;" th:text="${addressErrMsg}"></div>
+                <div th:if="${storeError}" style="color:#9b1c1c; font-size:0.9rem;" th:text="${storeErrMsg}"></div>
+            </div>
+            <div class="field" style="grid-column: span 2; display:flex; align-items:center; gap:10px;">
+                <input id="active" name="active" type="checkbox" th:checked="${active}" />
+                <label for="active">Active staff member</label>
+            </div>
+        </div>
+        <button type="submit" class="submit-btn">Save Changes</button>
+    </form>
+</div>
+</body>
+</html>
