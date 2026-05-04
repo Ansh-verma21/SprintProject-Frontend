@@ -1,0 +1,21 @@
+<table>
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="a : ${actors}">
+            <td th:text="${a[0]}"></td>
+            <td th:text="${a[1]}"></td>
+
+            <td>
+                <a th:href="@{'/member/1/actor-films?firstName=' + ${a[0]}}"
+                   class="btn-view">View Films</a>
+            </td>
+        </tr>
+    </tbody>
+</table>

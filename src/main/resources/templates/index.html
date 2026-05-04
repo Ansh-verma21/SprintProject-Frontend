@@ -233,8 +233,8 @@
         <div th:each="member : ${members}">
 
             <!-- ✅ CLICKABLE MEMBERS (FIXED: added member 1) -->
-            <a th:if="${member.memberNumber == 1 or member.memberNumber == 3 or member.memberNumber == 5 or member.memberNumber == 6}"
-               th:href="${member.memberNumber == 6 ? '/languages' : '/member/' + member.memberNumber}"
+            <a th:if="${member.memberNumber == 1 or member.memberNumber == 2 or member.memberNumber == 3 or member.memberNumber == 5 or member.memberNumber == 6}"
+               th:href="${member.memberNumber == 6 ? '/languages' : member.memberNumber == 2 ? '/actors' : '/member/' + member.memberNumber}"
                class="card">
 
                 <div class="card-strip"></div>
@@ -262,7 +262,7 @@
             </a>
 
             <!-- ❌ NON-CLICKABLE MEMBERS (FIXED) -->
-            <div th:if="${member.memberNumber != 1 and member.memberNumber != 3 and member.memberNumber != 5 and member.memberNumber != 6}"
+            <div th:if="${member.memberNumber != 1 and member.memberNumber != 2 and member.memberNumber != 3 and member.memberNumber != 5 and member.memberNumber != 6}"
                  class="card">
 
                 <div class="card-strip"></div>
