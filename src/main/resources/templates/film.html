@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Table</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent: #3F72AF;
+            --accent-dark: #2d5a8e;
+            --text-dark: #1a2a3a;
+            --text-mid: #4a5a6a;
+            --text-light: #8a9aaa;
+            --white: #ffffff;
+            --row-hover: #f0f4fa;
+            --border: #d0d8e8;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ── NAV BAR ── */
+        header {
+            background: var(--cream);
+            border-bottom: 2px solid var(--soft-blue);
+            padding: 18px 48px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-dot {
+            width: 11px; height: 11px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .nav-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            padding: 8px 18px;
+            border: 1.5px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.18s, color 0.18s;
+        }
+        .btn-outline:hover { background: var(--soft-blue); }
+
+        .btn-solid {
+            padding: 9px 20px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.18s;
+        }
+        .btn-solid:hover { background: var(--accent-dark); }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 44px 40px 80px;
+        }
+
+        /* ── SEARCH BAR ── */
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input[type="text"],
+        .search-bar input[type="date"] {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            background: var(--white);
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.18s;
+        }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar input::placeholder { color: var(--text-light); }
+
+        .search-bar .btn-solid { flex-shrink: 0; }
+
+        /* ── TABLE CARD ── */
+        .table-card {
+            background: var(--soft-blue);
+            border-radius: 20px;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .table-inner {
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: var(--accent);
+        }
+
+        thead th {
+            padding: 14px 22px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #fff;
+            text-align: left;
+        }
+
+        thead th:last-child { text-align: right; }
+
+        tbody tr {
+            border-bottom: 1px solid var(--soft-blue);
+            transition: background 0.15s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--row-hover); }
+
+        tbody td {
+            padding: 14px 22px;
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .td-desc {
+            color: var(--text-mid);
+            font-size: 0.82rem;
+            max-width: 340px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: var(--soft-blue);
+            color: var(--accent);
+        }
+
+        .actions-cell {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .btn-view {
+            padding: 6px 14px;
+            border: 1.5px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 6px;
+            transition: background 0.15s;
+        }
+        .btn-view:hover { background: var(--soft-blue); }
+
+        /* ── NO DATA ── */
+        .no-data {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-mid);
+            font-size: 0.9rem;
+        }
+        .no-data span {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* ── PAGINATION ── */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            margin-top: 32px;
+        }
+
+        .page-info {
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            padding: 0 6px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+    <div class="header-dot"></div>
+    <h1>Film Rental</h1>
+
+    <div class="nav-actions">
+        <a th:href="@{/}" class="btn-outline">← Back to Members</a>
+    </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+    <!-- Search Bar -->
+    <form method="get" th:action="@{/member/1}" class="search-bar">
+        <input type="text" name="title" placeholder="Search by title…" th:value="${title}">
+        <input type="date" name="releaseYear"
+               th:value="${releaseYear != null && releaseYear.length() == 4 ? releaseYear + '-01-01' : releaseYear}">
+        <button type="submit" class="btn-solid">Search</button>
+    </form>
+
+    <!-- Table Card -->
+    <div class="table-card">
+        <div class="table-inner">
+
+            <!-- Data Table -->
+            <table th:if="${!noData}">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Year</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="film : ${films}">
+                        <td th:text="${film.title}" style="font-weight:500;"></td>
+                        <td class="td-desc" th:text="${film.description}"></td>
+                        <td><span class="badge" th:text="${film.releaseYear}"></span></td>
+                        <td><span class="badge" th:text="${film.rating}"></span></td>
+                        <td class="actions-cell">
+                            <a th:href="@{'/member/1/film?id=' + ${film.filmId}}" class="btn-view">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- No Data -->
+            <div th:if="${noData}" class="no-data">
+                <span>🎬</span>
+                No films found for the selected filters.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" th:if="${totalPages > 1}">
+        <a class="btn-outline"
+           th:if="${currentPage > 0}"
+           th:href="@{/member/1(page=${currentPage - 1}, title=${title != null ? title : ''}, releaseYear=${releaseYear != null ? releaseYear : '2006'})}">
+            ← Prev
+        </a>
+        <span class="page-info">Page [[${currentPage + 1}]] of [[${totalPages}]]</span>
+        <a class="btn-solid"
+           th:if="${currentPage < totalPages - 1}"
+           th:href="@{/member/1(page=${currentPage + 1}, title=${title != null ? title : ''}, releaseYear=${releaseYear != null ? releaseYear : '2006'})}">
+            Next →
+        </a>
+    </div>
+
+</main>
+</body>
+</html>
