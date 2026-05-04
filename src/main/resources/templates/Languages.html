@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Languages</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --cream: #F9F7F7;
+            --soft-blue: #DBE2EF;
+            --accent: #3F72AF;
+            --text-dark: #1a2a3a;
+            --text-mid: #4a5a6a;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--cream);
+            border-bottom: 2px solid var(--soft-blue);
+            padding: 30px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        .add-btn,
+        .search-btn {
+            text-decoration: none;
+            color: white;
+            background: var(--accent);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .add-btn:hover,
+        .search-btn:hover {
+            opacity: 0.88;
+        }
+
+        .page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px 60px;
+        }
+
+        .error-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.84rem;
+            color: #991b1b;
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: var(--soft-blue);
+            border-radius: 18px;
+            padding: 28px 32px;
+            box-shadow: 0 2px 12px rgba(63,114,175,0.08);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--cream);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: .8rem 3rem;
+            text-align: left;
+        }
+
+        .data-table th {
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            border-top: 1px solid var(--soft-blue);
+            font-size: 0.88rem;
+            color: var(--text-dark);
+        }
+
+        .data-table tbody tr:hover td {
+            background: rgba(219,226,239,0.5);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .detail-link,
+        .edit-link {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .detail-link {
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            background: transparent;
+        }
+
+        .detail-link:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .edit-link {
+            color: white;
+            background: var(--accent);
+        }
+
+        .edit-link:hover {
+            opacity: 0.88;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #6a7a8a;
+            font-size: 0.9rem;
+            background: var(--cream);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="header-left">
+        <div class="header-dot"></div>
+        <h1>Languages</h1>
+    </div>
+    <div class="header-right">
+        <a th:href="@{/languages/add-language}" class="add-btn">+ Add Language</a>
+    </div>
+</header>
+
+<!-- PAGE CONTENT -->
+<div class="page">
+
+    <!-- ERROR BANNER -->
+    <div class="error-banner" th:if="${error}">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
+            <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
+            <line x1="10" y1="6" x2="10" y2="11" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="10" cy="14" r="1" fill="#dc2626"/>
+        </svg>
+        <span th:text="${error}">Something went wrong.</span>
+    </div>
+
+    <!-- TABLE WRAP -->
+    <div class="table-wrap">
+        <table class="data-table" th:if="${languages != null and !languages.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th style="text-align: center; width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="lang : ${languages}">
+                    <td th:text="${lang['name']}">English</td>
+                    <td style="text-align: center;">
+                        <div class="action-cell" style="justify-content: center;">
+                            <a th:href="@{/languages/{id}(id=${lang['id']})}" class="detail-link">View</a>
+                            <a th:href="@{/languages/edit-language/{id}(id=${lang['id']})}" class="edit-link">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- NO DATA STATE -->
+        <div class="no-data" th:if="${languages == null or languages.isEmpty()}">
+            <p>No languages found. <a th:href="@{/languages/add-language}" style="color: var(--accent); text-decoration: underline;">Add one now.</a></p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
