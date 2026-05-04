@@ -18,7 +18,7 @@ public class TeamController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final tools.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
     private static final String BASE_URL = "http://localhost:8000";
-    private static final int CITY_PAGE_SIZE = 100;
+    private static final int CITY_PAGE_SIZE = 600;
 
     // ── HOME ──────────────────────────────────────────────────
     @GetMapping("/")
