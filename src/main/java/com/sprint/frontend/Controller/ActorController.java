@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+
+
 import com.sprint.frontend.DTO.ActorDTO;
 import com.sprint.frontend.DTO.ActorFilmDTO;
 import com.sprint.frontend.DTO.FilmInfoDTO;
@@ -28,7 +30,7 @@ public class ActorController {
     // =========================
     // ✅ PAGE 2 → ACTOR LIST
     // =========================
-    @GetMapping({"/actors"})
+    @GetMapping("/actors")
     public String getActors(
             @RequestParam(value = "firstName", required = false) String firstName,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -40,11 +42,24 @@ public class ActorController {
 
         try {
 
-            String url = BASE_URL +
-                    "/filmActors/search/findByActorFirstName" +
-                    "?firstName=" + (firstName != null ? firstName : "JOHNNY") +
-                    "&page=" + page +
-                    "&size=" + PAGE_SIZE;
+            String url;
+
+            if (firstName != null && !firstName.trim().isEmpty()) {
+
+                // 🔍 SEARCH
+                url = BASE_URL +
+                        "/actors/search/findByFirstNameContainingIgnoreCase" +
+                        "?firstName=" + firstName +
+                        "&page=" + page +
+                        "&size=" + PAGE_SIZE;
+
+            } else {
+
+                // 📋 DEFAULT LIST
+                url = BASE_URL +
+                        "/actors?page=" + page +
+                        "&size=" + PAGE_SIZE;
+            }
 
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
@@ -53,21 +68,18 @@ public class ActorController {
 
                 ActorDTO actor = new ActorDTO();
 
-                actor.setFirstName(node.path("actor").path("firstName").asText());
-                actor.setLastName(node.path("actor").path("lastName").asText());
+                actor.setFirstName(node.path("firstName").asText());
+                actor.setLastName(node.path("lastName").asText());
 
-                // 🔥 Duplicate avoid (optional)
-                boolean exists = actors.stream()
-                        .anyMatch(a -> a.getFullName().equals(actor.getFullName()));
-
-                if (!exists) {
-                    actors.add(actor);
-                }
+                actors.add(actor);
             }
 
             JsonNode pageNode = root.path("page");
-            currentPage = pageNode.path("number").asInt();
-            totalPages = pageNode.path("totalPages").asInt();
+
+            if (!pageNode.isMissingNode()) {
+                currentPage = pageNode.path("number").asInt(0);
+                totalPages = pageNode.path("totalPages").asInt(1);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,6 +90,7 @@ public class ActorController {
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("firstName", firstName);
+        model.addAttribute("noData", actors.isEmpty());
 
         return "actor"; // actor.html
     }
@@ -88,6 +101,7 @@ public class ActorController {
     @GetMapping("/actors/films")
     public String getActorFilms(
             @RequestParam String firstName,
+            @RequestParam String lastName,
             @RequestParam(value = "page", defaultValue = "0") int page,
             Model model) {
 
@@ -97,9 +111,11 @@ public class ActorController {
 
         try {
 
+            // 🔥 Use filmActors API (CORRECT for actor + film mapping)
             String url = BASE_URL +
-                    "/filmActors/search/findByActorFirstName" +
+                    "/filmActors/search/findByActorName" +
                     "?firstName=" + firstName +
+                    "&lastName=" + lastName +
                     "&page=" + page +
                     "&size=" + PAGE_SIZE;
 
@@ -128,8 +144,11 @@ public class ActorController {
             }
 
             JsonNode pageNode = root.path("page");
-            currentPage = pageNode.path("number").asInt();
-            totalPages = pageNode.path("totalPages").asInt();
+
+            if (!pageNode.isMissingNode()) {
+                currentPage = pageNode.path("number").asInt(0);
+                totalPages = pageNode.path("totalPages").asInt(1);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,6 +159,7 @@ public class ActorController {
         model.addAttribute("firstName", firstName);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
+        model.addAttribute("noData", data.isEmpty());
 
         return "actor-film"; // actor-film.html
     }
