@@ -78,8 +78,8 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-        
-        /* ── INFO TABLE (name / address / phone) ── */
+
+        /* ── INFO TABLE ── */
         .info-card {
             background: var(--soft-blue);
             border-radius: 18px;
@@ -119,7 +119,7 @@
         .info-table tr:first-child td,
         .info-table tr:first-child th { border-top: none; }
 
-        /* ── LATEST RENTALS — 3 COLUMN CARDS ── */
+        /* ── LATEST RENTALS ── */
         .latest-wrap {
             background: var(--soft-blue);
             border-radius: 18px;
@@ -238,6 +238,62 @@
 
         .data-table tbody tr:hover td { background: rgba(219,226,239,0.5); }
 
+        /* ── PAGINATION ── */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pagination-info {
+            font-size: 0.82rem;
+            color: #6a7a8a;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pg-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
+            border: 1.5px solid rgba(63,114,175,0.25);
+            border-radius: 8px;
+            background: var(--cream);
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .pg-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .pg-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            pointer-events: none;
+        }
+
+        .pg-btn.disabled {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
         /* ── ERROR BOX ── */
         .error-box {
             background: #fee2e2;
@@ -265,12 +321,11 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class = "main-content" th:if="${error == null}">
+    <div class="main-content" th:if="${error == null}">
 
-        <!-- ①  CUSTOMER INFO TABLE ──────────────────────────────────── -->
+        <!-- ① CUSTOMER INFO TABLE -->
         <div class="info-card">
             <div class="section-heading">👤 Customer Information</div>
-
             <table class="info-table">
                 <tbody>
                     <tr>
@@ -289,11 +344,10 @@
             </table>
         </div>
 
-        <!-- ②  LATEST RENTALS — 3-COLUMN CARDS ─────────────────────── -->
+        <!-- ② LATEST RENTALS — 3-COLUMN CARDS -->
         <div class="latest-wrap">
             <div class="section-heading">🎬 Latest Rentals</div>
 
-            <!-- Has data -->
             <div th:if="${latestRentals != null and !latestRentals.isEmpty()}"
                  class="rental-cards">
                 <div th:each="r : ${latestRentals}" class="rental-card">
@@ -311,13 +365,12 @@
                 </div>
             </div>
 
-            <!-- No data -->
             <div th:if="${latestRentals == null or latestRentals.isEmpty()}" class="no-data">
                 🎞 No recent rentals found.
             </div>
         </div>
 
-        <!-- ③  FULL RENTAL HISTORY TABLE ───────────────────────────── -->
+        <!-- ③ FULL RENTAL HISTORY TABLE — server-side paginated, no JS -->
         <div class="history-wrap">
             <div class="section-heading">📋 Rental History</div>
 
@@ -331,20 +384,64 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="r, stat : ${allRentals}">
-                        <td th:text="${stat.index + 1}">1</td>
+                    <!--
+                        pagedRentals = only the 10 rows for the current page.
+                        Global row number = (currentPage * 10) + loopIndex + 1
+                    -->
+                    <tr th:each="r, stat : ${pagedRentals}">
+                        <td th:text="${currentPage * 10 + stat.index + 1}">1</td>
                         <td th:text="${r['filmName']}">TEEN APOLLO</td>
                         <td th:text="${r['rentalDate']}">2005-05-25</td>
                         <td th:text="${r['returnDate']}">2005-05-31</td>
                     </tr>
 
-                    <tr th:if="${allRentals == null or allRentals.isEmpty()}">
+                    <tr th:if="${pagedRentals == null or pagedRentals.isEmpty()}">
                         <td colspan="4">
                             <div class="no-data">🔍 No rental history found.</div>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- PAGINATION BAR — shown only when there is more than one page -->
+            <div class="pagination-bar" th:if="${totalPages > 1}">
+
+                <!-- "Showing 1–10 of 32 records" -->
+                <span class="pagination-info"
+                      th:text="'Showing ' + ${fromRecord} + '–' + ${toRecord} + ' of ' + ${totalRecords} + ' records'">
+                    Showing 1–10 of 32 records
+                </span>
+
+                <div class="pagination-controls">
+
+                    <!-- ← Prev (disabled on first page) -->
+                    <a class="pg-btn"
+                       th:classappend="${!hasPrev} ? ' disabled'"
+                       th:href="@{/member/3/customer(firstName=${firstName},lastName=${lastName},page=${prevPage})}">
+                        ← Prev
+                    </a>
+
+                    <!-- Numbered page buttons -->
+                    <th:block th:each="p : ${pageNumbers}">
+                        <a class="pg-btn"
+                           th:classappend="${p == currentPage} ? ' active'"
+                           th:text="${p + 1}"
+                           th:href="@{/member/3/customer(firstName=${firstName},lastName=${lastName},page=${p})}">
+                            1
+                        </a>
+                    </th:block>
+
+                    <!-- Next → (disabled on last page) -->
+                    <a class="pg-btn"
+                       th:classappend="${!hasNext} ? ' disabled'"
+                       th:href="@{/member/3/customer(firstName=${firstName},lastName=${lastName},page=${nextPage})}">
+                        Next →
+                    </a>
+
+                </div>
+            </div>
+            <!-- end pagination bar -->
+
         </div>
 
     </div><!-- /main content -->
