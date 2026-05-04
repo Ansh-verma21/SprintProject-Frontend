@@ -10,7 +10,6 @@
         rel="stylesheet">
 
     <style>
-        /* ===== VARIABLES ===== */
         :root {
             --cream: #F9F7F7;
             --soft-blue: #DBE2EF;
@@ -19,13 +18,7 @@
             --text-mid: #4a5a6a;
         }
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background: var(--cream);
@@ -44,6 +37,7 @@
             gap: 14px;
         }
 
+        /* LEFT SIDE: back btn + dot + title */
         .header-left {
             display: flex;
             align-items: center;
@@ -68,8 +62,7 @@
             gap: 12px;
         }
 
-        .add-btn,
-        .search-btn {
+        .add-btn {
             text-decoration: none;
             color: white;
             background: var(--accent);
@@ -82,10 +75,22 @@
             transition: opacity 0.2s;
         }
 
-        .add-btn:hover,
-        .search-btn:hover {
-            opacity: 0.88;
+        .add-btn:hover { opacity: 0.88; }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--accent);
+            background: transparent;
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
         }
+
+        .back-btn:hover { background: var(--soft-blue); }
 
         .page {
             max-width: 1200px;
@@ -106,7 +111,6 @@
             color: #991b1b;
         }
 
-        /* ── TABLE ── */
         .table-wrap {
             background: var(--soft-blue);
             border-radius: 18px;
@@ -143,9 +147,7 @@
             color: var(--text-dark);
         }
 
-        .data-table tbody tr:hover td {
-            background: rgba(219,226,239,0.5);
-        }
+        .data-table tbody tr:hover td { background: rgba(219,226,239,0.5); }
 
         .action-cell {
             display: flex;
@@ -153,8 +155,7 @@
             align-items: center;
         }
 
-        .detail-link,
-        .edit-link {
+        .detail-link, .edit-link {
             padding: 6px 14px;
             border-radius: 8px;
             text-decoration: none;
@@ -169,19 +170,10 @@
             background: transparent;
         }
 
-        .detail-link:hover {
-            background: var(--accent);
-            color: white;
-        }
+        .detail-link:hover { background: var(--accent); color: white; }
 
-        .edit-link {
-            color: white;
-            background: var(--accent);
-        }
-
-        .edit-link:hover {
-            opacity: 0.88;
-        }
+        .edit-link { color: white; background: var(--accent); }
+        .edit-link:hover { opacity: 0.88; }
 
         .no-data {
             text-align: center;
@@ -196,25 +188,21 @@
 
 <body>
 
-<!-- HEADER -->
 <header>
-    <div class="header-right">
-    <a th:href="@{/}" class="add-btn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent);">← Home</a>
-    <a th:href="@{/languages/add-language}" class="add-btn">+ Add Language</a>
-</div>
+    <!-- LEFT: back + dot + title -->
     <div class="header-left">
-        <div class="header-dot"></div>
+        <a th:href="@{/}" class="back-btn">← Back </a>
         <h1>Languages</h1>
     </div>
+
+    <!-- RIGHT: add button -->
     <div class="header-right">
         <a th:href="@{/languages/add-language}" class="add-btn">+ Add Language</a>
     </div>
 </header>
 
-<!-- PAGE CONTENT -->
 <div class="page">
 
-    <!-- ERROR BANNER -->
     <div class="error-banner" th:if="${error}">
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
             <circle cx="10" cy="10" r="9" stroke="#dc2626" stroke-width="1.8"/>
@@ -224,7 +212,6 @@
         <span th:text="${error}">Something went wrong.</span>
     </div>
 
-    <!-- TABLE WRAP -->
     <div class="table-wrap">
         <table class="data-table" th:if="${languages != null and !languages.isEmpty()}">
             <thead>
@@ -246,7 +233,6 @@
             </tbody>
         </table>
 
-        <!-- NO DATA STATE -->
         <div class="no-data" th:if="${languages == null or languages.isEmpty()}">
             <p>No languages found. <a th:href="@{/languages/add-language}" style="color: var(--accent); text-decoration: underline;">Add one now.</a></p>
         </div>
