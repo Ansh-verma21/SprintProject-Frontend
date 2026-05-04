@@ -1,0 +1,19 @@
+<table>
+    <thead>
+        <tr>
+            <th>Actor</th>
+            <th>Film</th>
+            <th>Year</th>
+            <th>Rating</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="d : ${data}">
+            <td th:text="${d.actorName}"></td>
+            <td th:text="${d.filmTitle}"></td>
+            <td th:text="${d.releaseYear}"></td>
+            <td th:text="${d.rating}"></td>
+        </tr>
+    </tbody>
+</table>
