@@ -214,8 +214,8 @@
 
         <div th:each="member : ${members}">
 
-            <!-- clickable only member 3 -->
-            <a th:if="${member.memberNumber == 3}"
+                <!-- clickable only member 3 and 5 -->
+                <a th:if="${member.memberNumber == 3 or member.memberNumber == 5}"
                th:href="@{/member/{id}(id=${member.memberNumber})}"
                class="card">
 
@@ -244,7 +244,7 @@
             </a>
 
             <!-- others -->
-            <div th:if="${member.memberNumber != 3}" class="card">
+            <div th:if="${member.memberNumber != 3 and member.memberNumber != 5}" class="card">
 
                 <div class="card-strip"></div>
 

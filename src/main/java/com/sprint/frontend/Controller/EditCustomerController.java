@@ -98,7 +98,7 @@ public class EditCustomerController {
             model.addAttribute("addressError",  true);
             model.addAttribute("addressErrMsg",
                     "No address found for \"" + addressText + "\". Please check and try again.");
-            return "editCustomer";
+            return "Editcustomer";
         }
 
         // ── 2. Resolve store ──────────────────────────────────
@@ -107,7 +107,7 @@ public class EditCustomerController {
             model.addAttribute("storeError",  true);
             model.addAttribute("storeErrMsg",
                     "No store found in city \"" + storeCity + "\". Please check and try again.");
-            return "editCustomer";
+            return "Editcustomer";
         }
 
         // ── 3. PUT /customers/{id} — single call updates everything ──
@@ -150,7 +150,7 @@ public class EditCustomerController {
             model.addAttribute("errorMsg", "Something went wrong. Please try again.");
         }
 
-        return "editCustomer";
+        return "Editcustomer";
     }
 
     // ── RESOLVE ADDRESS → full URL e.g. http://localhost:8000/addresses/1 ──
