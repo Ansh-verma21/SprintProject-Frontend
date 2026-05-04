@@ -283,7 +283,8 @@
                         <td th:text="${a.firstName}" style="font-weight:500;"></td>
                         <td th:text="${a.lastName}"></td>
                         <td class="actions-cell">
-                            <a th:href="@{'/actors/films?firstName=' + ${a.firstName}}" class="btn-view">View Films</a>
+							<a th:href="@{'/actors/films?firstName=' + ${a.firstName} + '&lastName=' + ${a.lastName}}" 
+							   class="btn-view">View Films</a>
                         </td>
                     </tr>
                 </tbody>

@@ -219,7 +219,7 @@
             <table th:if="${!data.isEmpty()}">
                 <thead>
                     <tr>
-                        <th>Actor</th>
+                      
                         <th>Film</th>
                         <th>Year</th>
                         <th>Rating</th>
@@ -227,7 +227,7 @@
                 </thead>
                 <tbody>
                     <tr th:each="d : ${data}">
-                        <td th:text="${d.actor.firstName + ' ' + d.actor.lastName}" style="font-weight:500;"></td>
+                        
                         <td th:text="${d.film.title}"></td>
                         <td><span class="badge" th:text="${d.film.releaseYear}"></span></td>
                         <td><span class="badge" th:text="${d.film.rating}"></span></td>
@@ -246,7 +246,7 @@
 
     <!-- Pagination -->
     <div class="pagination" th:if="${totalPages > 1}">
-        <a th:href="@{/actors/films(firstName=${firstName}, page=0)}" class="page-link">First</a>
+        <a th:href="@{/actors/films(firstName=${firstName}, lastName=${lastName}, page=0)}" class="page-link">First</a>
         <a th:href="@{/actors/films(firstName=${firstName}, page=${currentPage - 1})}" 
            th:unless="${currentPage == 0}" class="page-link">← Previous</a>
         <span class="page-info">Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span></span>
