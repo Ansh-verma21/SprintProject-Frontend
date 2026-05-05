@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.sprint.frontend.DTO.FilmDTO;
 import com.sprint.frontend.DTO.FilmDetailDTO;
@@ -22,7 +23,8 @@ public class FilmController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int PAGE_SIZE = 5;
 
     @GetMapping("/member/1")
@@ -48,7 +50,7 @@ public class FilmController {
             if (title != null && !title.isEmpty() && (year == null || year.isEmpty())) {
 
                 // 🔥 TITLE ONLY
-                url = BASE_URL +
+                url = baseUrl +
                         "/films/search/byTitle" +
                         "?title=" + title +
                         "&page=" + page +
@@ -57,7 +59,7 @@ public class FilmController {
             } else if (title != null && !title.isEmpty()) {
 
                 // 🔥 TITLE + YEAR
-                url = BASE_URL +
+                url = baseUrl +
                         "/films/search/byTitleAndYear" +
                         "?title=" + title +
                         "&releaseYear=" + year +
@@ -67,7 +69,7 @@ public class FilmController {
             } else {
 
                 // 🔥 YEAR ONLY (YOUR CUSTOM API)
-                url = BASE_URL +
+                url = baseUrl +
                         "/films/search/byReleaseYear" +
                         "?releaseYear=" + (year != null ? year : "2006") +
                         "&page=" + page +
@@ -120,7 +122,7 @@ public class FilmController {
             FilmDetailDTO dto = new FilmDetailDTO();
 
             // 🔹 1. Film basic data
-            String filmJson = restTemplate.getForObject(BASE_URL + "/films/" + id, String.class);
+            String filmJson = restTemplate.getForObject(baseUrl + "/films/" + id, String.class);
             JsonNode film = objectMapper.readTree(filmJson);
 
             dto.setTitle(film.path("title").asText());
@@ -130,12 +132,12 @@ public class FilmController {
             dto.setLength(film.path("length").asInt());
 
             // 🔹 2. Language
-            String langJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/language", String.class);
+            String langJson = restTemplate.getForObject(baseUrl + "/films/" + id + "/language", String.class);
             JsonNode lang = objectMapper.readTree(langJson);
             dto.setLanguage(lang.path("name").asText());
 
             // 🔹 3. Actors
-            String actorJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/actors", String.class);
+            String actorJson = restTemplate.getForObject(baseUrl + "/films/" + id + "/actors", String.class);
             JsonNode actorRoot = objectMapper.readTree(actorJson);
 
             List<String> actors = new ArrayList<>();
@@ -145,7 +147,7 @@ public class FilmController {
             dto.setActors(actors);
 
             // 🔹 4. Categories
-            String catJson = restTemplate.getForObject(BASE_URL + "/films/" + id + "/categories", String.class);
+            String catJson = restTemplate.getForObject(baseUrl + "/films/" + id + "/categories", String.class);
             JsonNode catRoot = objectMapper.readTree(catJson);
 
             List<String> categories = new ArrayList<>();

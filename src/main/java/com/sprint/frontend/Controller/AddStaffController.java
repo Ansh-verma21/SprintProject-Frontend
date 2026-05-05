@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -22,7 +23,8 @@ public class AddStaffController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int STORE_PAGE_SIZE = 50;
 
     @GetMapping("/member/4/add-staff")
@@ -76,13 +78,13 @@ public class AddStaffController {
                     .put("password", password.trim())
                     .put("active", active)
                     .put("address", addressUrl)
-                    .put("store", BASE_URL + "/stores/" + storeId);
+                    .put("store", baseUrl + "/stores/" + storeId);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
-            ResponseEntity<String> response = restTemplate.postForEntity(BASE_URL + "/staff", request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/staff", request, String.class);
             if (response.getStatusCode().is2xxSuccessful()) {
                 String location = response.getHeaders().getLocation() != null ? response.getHeaders().getLocation().toString() : "";
                 model.addAttribute("success", true);
@@ -108,7 +110,7 @@ public class AddStaffController {
 
     private String resolveAddressUrl(String addressText) {
         try {
-            String url = BASE_URL + "/addresses/search/findByAddressIgnoreCase?address="
+            String url = baseUrl + "/addresses/search/findByAddressIgnoreCase?address="
                     + URLEncoder.encode(addressText, StandardCharsets.UTF_8);
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
@@ -128,7 +130,7 @@ public class AddStaffController {
     private List<StoreInfo> fetchStores() {
         List<StoreInfo> stores = new ArrayList<>();
         try {
-            String url = BASE_URL + "/stores?page=0&size=" + STORE_PAGE_SIZE;
+            String url = baseUrl + "/stores?page=0&size=" + STORE_PAGE_SIZE;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode content = objectMapper.readTree(json).path("content");
             for (JsonNode node : content) {

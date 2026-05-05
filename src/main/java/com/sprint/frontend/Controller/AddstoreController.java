@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.URI;
 
@@ -23,7 +24,8 @@ public class AddstoreController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
 
     @GetMapping("/member/5/add-store")
     public String showForm(Model model) {
@@ -70,7 +72,7 @@ public class AddstoreController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/stores", HttpMethod.POST, request, String.class);
+                    baseUrl + "/stores", HttpMethod.POST, request, String.class);
 
             if (response.getStatusCode() == HttpStatus.CREATED) {
                 String storeId = resolveStoreIdFromLocation(response.getHeaders().getLocation());
@@ -95,7 +97,7 @@ public class AddstoreController {
 
     private String resolveAddress(String addressText) {
         try {
-            String url = BASE_URL + "/addresses/search/findByAddressIgnoreCase?address="
+            String url = baseUrl + "/addresses/search/findByAddressIgnoreCase?address="
                     + java.net.URLEncoder.encode(addressText, "UTF-8");
             String json = restTemplate.getForObject(url, String.class);
             tools.jackson.databind.JsonNode root = objectMapper.readTree(json);
@@ -103,7 +105,7 @@ public class AddstoreController {
                 if ("self".equals(link.path("rel").asText())) {
                     String href = link.path("href").asText();
                     String id = href.substring(href.lastIndexOf('/') + 1);
-                    return BASE_URL + "/addresses/" + id;
+                    return baseUrl + "/addresses/" + id;
                 }
             }
         } catch (HttpClientErrorException.NotFound e) {
@@ -116,9 +118,9 @@ public class AddstoreController {
 
     private String resolveManagerStaff(String staffId) {
         try {
-            String url = BASE_URL + "/staff/" + staffId;
+            String url = baseUrl + "/staff/" + staffId;
             restTemplate.getForObject(url, String.class);
-            return BASE_URL + "/staff/" + staffId;
+            return baseUrl + "/staff/" + staffId;
         } catch (HttpClientErrorException.NotFound e) {
             return null;
         } catch (Exception e) {

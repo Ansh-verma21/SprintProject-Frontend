@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
@@ -18,13 +19,14 @@ public class LanguageController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
 
     // ── HOME: LIST ALL LANGUAGES ──────────────────────────────────
     @GetMapping("")
     public String languagesPage(Model model) {
         try {
-            String url = BASE_URL + "/languages";
+            String url = baseUrl + "/languages";
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
             JsonNode content = root.path("content");
@@ -57,7 +59,7 @@ public class LanguageController {
                                 @RequestParam(defaultValue = "0") int page,
                                 Model model) {
         try {
-            String url = BASE_URL + "/languages/" + id;
+            String url = baseUrl + "/languages/" + id;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode lang = objectMapper.readTree(json);
 
@@ -141,7 +143,7 @@ public class LanguageController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/languages",
+                    baseUrl + "/languages",
                     HttpMethod.POST,
                     request,
                     String.class
@@ -177,7 +179,7 @@ public class LanguageController {
         resetFlags(model);
 
         try {
-            String url = BASE_URL + "/languages/" + id;
+            String url = baseUrl + "/languages/" + id;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode lang = objectMapper.readTree(json);
 
@@ -225,7 +227,7 @@ public class LanguageController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/languages/" + id,
+                    baseUrl + "/languages/" + id,
                     HttpMethod.PUT,
                     request,
                     String.class
@@ -258,7 +260,7 @@ public class LanguageController {
             Model model) {
 
         try {
-            String url = BASE_URL + "/films/search/byLanguage?language=" + query;
+            String url = baseUrl + "/films/search/byLanguage?language=" + query;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
             JsonNode content = root.path("content");
@@ -291,7 +293,7 @@ public class LanguageController {
 
     // ── HELPER: Fetch Films by Language ────────────────────────
     private JsonNode fetchFilmsByLanguage(int languageId, int page) throws Exception {
-        String url = BASE_URL + "/films/search/byLanguage?languageId=" + languageId + "&page=" + page + "&size=10";
+        String url = baseUrl + "/films/search/byLanguage?languageId=" + languageId + "&page=" + page + "&size=10";
         String json = restTemplate.getForObject(url, String.class);
         return objectMapper.readTree(json);
     }

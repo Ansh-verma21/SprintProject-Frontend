@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,8 @@ public class StoreController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int STORE_PAGE_SIZE = 2;
     private static final int CITY_PAGE_SIZE = 100;
     private static final String DEFAULT_CITY = "Lethbridge";
@@ -79,7 +81,7 @@ public class StoreController {
         List<StoreDTO> stores = new ArrayList<>();
         boolean hasMore = false;
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/stores/search/findByAddress_City_CityIgnoreCase?city="
                     + java.net.URLEncoder.encode(city, "UTF-8")
                     + "&page=" + page
@@ -111,7 +113,7 @@ public class StoreController {
 
     private StoreDTO fetchStoreById(long storeId) {
         try {
-            String url = BASE_URL + "/stores/" + storeId + "?projection=storeProjection";
+            String url = baseUrl + "/stores/" + storeId + "?projection=storeProjection";
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
             return parseStore(root);
@@ -124,7 +126,7 @@ public class StoreController {
     private List<String> fetchCities(int page) {
         List<String> cityNames = new ArrayList<>();
         try {
-            String url = BASE_URL + "/cities?page=" + page + "&size=" + CITY_PAGE_SIZE;
+            String url = baseUrl + "/cities?page=" + page + "&size=" + CITY_PAGE_SIZE;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
             for (JsonNode node : root.path("content")) {
@@ -138,7 +140,7 @@ public class StoreController {
 
     private long fetchStoreMovieCount(long storeId) {
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/inventories/search/findByStore_StoreId?storeId=" + storeId
                     + "&page=0&size=1";
             String json = restTemplate.getForObject(url, String.class);

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -13,12 +14,13 @@ public class StaffDetailController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
 
     @GetMapping("/member/4/staff")
     public String staffDetail(@RequestParam("id") long id, Model model) {
         try {
-            String staffUrl = BASE_URL + "/staff/" + id + "?projection=staffProjection";
+            String staffUrl = baseUrl + "/staff/" + id + "?projection=staffProjection";
             String staffJson = restTemplate.getForObject(staffUrl, String.class);
             JsonNode staff = objectMapper.readTree(staffJson);
 
@@ -27,7 +29,7 @@ public class StaffDetailController {
             String city = staff.path("address").path("city").path("city").asText("");
             String storeLabel = "Store " + storeId;
 
-            String addressUrl = BASE_URL + "/staff/" + id + "/address";
+            String addressUrl = baseUrl + "/staff/" + id + "/address";
             String addressJson = restTemplate.getForObject(addressUrl, String.class);
             JsonNode addressDetails = objectMapper.readTree(addressJson);
             String phone = addressDetails.path("phone").asText("N/A");
@@ -55,7 +57,7 @@ public class StaffDetailController {
     @PostMapping("/member/4/staff/delete")
     public String deleteStaff(@RequestParam("id") long id) {
         try {
-            restTemplate.delete(BASE_URL + "/staff/" + id);
+            restTemplate.delete(baseUrl + "/staff/" + id);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,7 +72,7 @@ public class StaffDetailController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> entity = new HttpEntity<>(bodyNode.toString(), headers);
-            restTemplate.exchange(BASE_URL + "/staff/" + id, HttpMethod.PATCH, entity, String.class);
+            restTemplate.exchange(baseUrl + "/staff/" + id, HttpMethod.PATCH, entity, String.class);
         } catch (Exception e) {
             e.printStackTrace();
         }

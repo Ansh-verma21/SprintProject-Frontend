@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
-
+import org.springframework.beans.factory.annotation.Value;
 
 
 import com.sprint.frontend.DTO.ActorDTO;
@@ -24,7 +24,8 @@ public class ActorController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int PAGE_SIZE = 5;
 
     // =========================
@@ -47,7 +48,7 @@ public class ActorController {
             if (firstName != null && !firstName.trim().isEmpty()) {
 
                 // 🔍 SEARCH
-                url = BASE_URL +
+                url = baseUrl +
                         "/actors/search/findByFirstNameContainingIgnoreCase" +
                         "?firstName=" + firstName +
                         "&page=" + page +
@@ -56,7 +57,7 @@ public class ActorController {
             } else {
 
                 // 📋 DEFAULT LIST
-                url = BASE_URL +
+                url = baseUrl +
                         "/actors?page=" + page +
                         "&size=" + PAGE_SIZE;
             }
@@ -92,7 +93,7 @@ public class ActorController {
         model.addAttribute("firstName", firstName);
         model.addAttribute("noData", actors.isEmpty());
 
-        return "actor"; // actor.html
+        return "Actor"; // Actor.html
     }
 
     // =========================
@@ -112,7 +113,7 @@ public class ActorController {
         try {
 
             // 🔥 Use filmActors API (CORRECT for actor + film mapping)
-            String url = BASE_URL +
+            String url = baseUrl +
                     "/filmActors/search/findByActorName" +
                     "?firstName=" + firstName +
                     "&lastName=" + lastName +
@@ -162,6 +163,6 @@ public class ActorController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("noData", data.isEmpty());
 
-        return "actor-film"; // actor-film.html
+        return "Actor-Film"; // Actor-Film.html
     }
 }
