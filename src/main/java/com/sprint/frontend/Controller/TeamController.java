@@ -218,16 +218,16 @@ public class TeamController {
     private List<MemberDTO> buildMembers() {
         return Arrays.asList(
                 new MemberDTO(1, "Ansh Verma", "Film",
-                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMkg4yY-1vpEMgzIV1GyLIHgGfzPafZ7c4lA&s"),
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/ansh.jpeg"),
                 new MemberDTO(2, "Manan Kr. Agarwal", "Actor",
-                        "https://pbs.twimg.com/profile_images/1168413160019091456/HmkFFlqY_400x400.jpg"),
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/manan.jpeg"),
                 new MemberDTO(3, "Aayush Saxena", "Customer",
-                        "https://i.pinimg.com/originals/b5/1b/c7/b51bc7c7f77ef1d955e9a2e1b4caa64e.jpg"),
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/aayush.jpeg"),
                 new MemberDTO(4, "Aniket Rathore", "Staff",
-                        "https://i.quotev.com/wgx7jg4haaaa.jpg"),
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/aniket.jpeg"),
                 new MemberDTO(5, "Mohd Amaan", "Store & Inventory",
-                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4fGl36r2h3AqOEeZVvNE8rvAzn041njqYww&s"),
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/WhatsApp%20Image%202026-05-05%20at%209.32.08%20AM.jpeg"),
                 new MemberDTO(6, "Aurindum Bose", "Language",
-                        "https://media.tenor.com/ba4PQ9G4sksAAAAe/itachi-itachi-spanch-bob.png"));
+                        "https://raw.githubusercontent.com/aurindumgit/SprintProject-Frontend/dev/images/auri.jpeg"));
     }
 }
