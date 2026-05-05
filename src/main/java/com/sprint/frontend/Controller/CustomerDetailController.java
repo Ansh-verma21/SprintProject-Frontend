@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
@@ -14,7 +15,8 @@ public class CustomerDetailController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int PAGE_SIZE = 10;
 
     /**
@@ -29,7 +31,7 @@ public class CustomerDetailController {
 
         try {
             // ── STEP 1: Search customer by name ──────────────────────────────
-            String searchUrl = BASE_URL
+            String searchUrl = baseUrl
                     + "/customers/search/findByFirstNameAndLastName"
                     + "?firstName=" + firstName.toUpperCase()
                     + "&lastName="  + lastName.toUpperCase();
@@ -144,7 +146,7 @@ public class CustomerDetailController {
     private List<Map<String, String>> parseRentals(int customerId) {
         List<Map<String, String>> result = new ArrayList<>();
         try {
-            String url      = BASE_URL + "/customers/" + customerId + "/rentals";
+            String url      = baseUrl + "/customers/" + customerId + "/rentals";
             String json     = restTemplate.getForObject(url, String.class);
             JsonNode root   = objectMapper.readTree(json);
             JsonNode rentals = root.path("content");

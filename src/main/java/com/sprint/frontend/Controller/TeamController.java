@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
@@ -17,7 +18,8 @@ public class TeamController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final tools.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int CITY_PAGE_SIZE = 600;
 
     // ── HOME ──────────────────────────────────────────────────
@@ -138,7 +140,7 @@ public class TeamController {
         List<String> cityNames = new ArrayList<>();
         boolean hasMore = false;
         try {
-            String url = BASE_URL + "/cities?page=" + page + "&size=" + CITY_PAGE_SIZE;
+            String url = baseUrl + "/cities?page=" + page + "&size=" + CITY_PAGE_SIZE;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
 
@@ -162,7 +164,7 @@ public class TeamController {
     private List<CustomerDTO> fetchCustomersByCity(String city) {
         List<CustomerDTO> customers = new ArrayList<>();
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/customers/search/findByAddress_City_CityIgnoreCase?city="
                     + city + "&page=0&size=20";
 
@@ -185,7 +187,7 @@ public class TeamController {
     private List<CustomerDTO> searchCustomers(String firstName, String lastName) {
         List<CustomerDTO> customers = new ArrayList<>();
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/customers/search/findByFirstNameAndLastName?firstName="
                     + firstName.toUpperCase()
                     + (lastName.isEmpty() ? "" : "&lastName=" + lastName.toUpperCase())

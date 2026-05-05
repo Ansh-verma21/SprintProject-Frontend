@@ -9,13 +9,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 @Controller
 public class EditCustomerController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
 
     // ── SHOW EDIT FORM ────────────────────────────────────────
     @GetMapping("/member/3/edit-customer")
@@ -27,7 +29,7 @@ public class EditCustomerController {
         resetFlags(model);
 
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/customers/search/findByFirstNameAndLastName?firstName="
                     + firstName.toUpperCase()
                     + "&lastName=" + lastName.toUpperCase();
@@ -126,7 +128,7 @@ public class EditCustomerController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/customers/" + customerId,
+                    baseUrl + "/customers/" + customerId,
                     HttpMethod.PUT,
                     request,
                     String.class
@@ -156,7 +158,7 @@ public class EditCustomerController {
     // ── RESOLVE ADDRESS → full URL e.g. http://localhost:8000/addresses/1 ──
     private String resolveAddressUrl(String addressText) {
         try {
-            String url = BASE_URL + "/addresses/search/findByAddressIgnoreCase?address="
+            String url = baseUrl + "/addresses/search/findByAddressIgnoreCase?address="
                     + java.net.URLEncoder.encode(addressText, "UTF-8");
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
@@ -176,7 +178,7 @@ public class EditCustomerController {
     // ── RESOLVE STORE → full URL e.g. http://localhost:8000/stores/1 ──
     private String resolveStoreUrl(String city) {
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/stores/search/findByAddress_City_CityIgnoreCase?city="
                     + java.net.URLEncoder.encode(city, "UTF-8")
                     + "&page=0&size=1";

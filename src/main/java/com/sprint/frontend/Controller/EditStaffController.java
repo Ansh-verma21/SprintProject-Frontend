@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -24,7 +25,8 @@ public class EditStaffController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int STORE_PAGE_SIZE = 50;
 
     @GetMapping("/member/4/edit-staff")
@@ -32,7 +34,7 @@ public class EditStaffController {
         resetForm(model);
         model.addAttribute("stores", fetchStores());
         try {
-            String json = restTemplate.getForObject(BASE_URL + "/staff/" + id, String.class);
+            String json = restTemplate.getForObject(baseUrl + "/staff/" + id, String.class);
             JsonNode staff = objectMapper.readTree(json);
             model.addAttribute("staffId", id);
             model.addAttribute("firstName", staff.path("firstName").asText(""));
@@ -97,7 +99,7 @@ public class EditStaffController {
                     .put("username", username.trim())
                     .put("active", active)
                     .put("address", addressUrl)
-                    .put("store", BASE_URL + "/stores/" + storeId);
+                    .put("store", baseUrl + "/stores/" + storeId);
             if (password != null && !password.trim().isEmpty()) {
                 body.put("password", password.trim());
             }
@@ -107,7 +109,7 @@ public class EditStaffController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/staff/" + staffId,
+                    baseUrl + "/staff/" + staffId,
                     HttpMethod.PUT,
                     request,
                     String.class
@@ -133,7 +135,7 @@ public class EditStaffController {
 
     private String resolveAddressUrl(String addressText) {
         try {
-            String url = BASE_URL + "/addresses/search/findByAddressIgnoreCase?address="
+            String url = baseUrl + "/addresses/search/findByAddressIgnoreCase?address="
                     + URLEncoder.encode(addressText, StandardCharsets.UTF_8);
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
@@ -153,7 +155,7 @@ public class EditStaffController {
     private List<StoreInfo> fetchStores() {
         List<StoreInfo> stores = new ArrayList<>();
         try {
-            String url = BASE_URL + "/stores?page=0&size=" + STORE_PAGE_SIZE;
+            String url = baseUrl + "/stores?page=0&size=" + STORE_PAGE_SIZE;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode content = objectMapper.readTree(json).path("content");
             for (JsonNode node : content) {

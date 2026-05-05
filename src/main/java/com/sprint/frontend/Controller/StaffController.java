@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -21,7 +22,8 @@ public class StaffController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
     private static final int STORE_PAGE_SIZE = 50;
 
     @GetMapping("/member/4")
@@ -94,7 +96,7 @@ public class StaffController {
     private List<StaffDTO> fetchStaffByStore(long storeId) {
         List<StaffDTO> staff = new ArrayList<>();
         try {
-            String url = BASE_URL + "/staff/search/findByStore_StoreId?storeId=" + storeId + "&page=0&size=60";
+            String url = baseUrl + "/staff/search/findByStore_StoreId?storeId=" + storeId + "&page=0&size=60";
             String json = restTemplate.getForObject(url, String.class);
             JsonNode content = objectMapper.readTree(json).path("content");
             for (JsonNode node : content) {
@@ -118,7 +120,7 @@ public class StaffController {
     private List<StaffDTO> searchStaff(String query, long storeId) {
         List<StaffDTO> staff = new ArrayList<>();
         try {
-            String url = BASE_URL + "/staff/search/findByFirstNameContainingIgnoreCaseAndStore_StoreId?name="
+            String url = baseUrl + "/staff/search/findByFirstNameContainingIgnoreCaseAndStore_StoreId?name="
                     + URLEncoder.encode(query, StandardCharsets.UTF_8)
                     + "&storeId=" + storeId;
             String json = restTemplate.getForObject(url, String.class);
@@ -144,7 +146,7 @@ public class StaffController {
     private List<StoreInfo> fetchStores() {
         List<StoreInfo> stores = new ArrayList<>();
         try {
-            String url = BASE_URL + "/stores?page=0&size=" + STORE_PAGE_SIZE;
+            String url = baseUrl + "/stores?page=0&size=" + STORE_PAGE_SIZE;
             String json = restTemplate.getForObject(url, String.class);
             JsonNode content = objectMapper.readTree(json).path("content");
             for (JsonNode node : content) {

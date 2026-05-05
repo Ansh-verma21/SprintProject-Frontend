@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 
@@ -17,7 +18,8 @@ public class AddcustomerController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String BASE_URL = "http://localhost:8000";
+    @Value("${app.baseUrl}")
+    private String baseUrl;
 
     // ── SHOW FORM ─────────────────────────────────────────────
     @GetMapping("/member/3/add-customer")
@@ -80,7 +82,7 @@ public class AddcustomerController {
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    BASE_URL + "/customers", HttpMethod.POST, request, String.class);
+                    baseUrl + "/customers", HttpMethod.POST, request, String.class);
 
             if (response.getStatusCode() == HttpStatus.CREATED) {
                 String customerId = resolveCustomerId(
@@ -110,7 +112,7 @@ public class AddcustomerController {
     // ── RESOLVE ADDRESS → "/addresses/{id}" ──────────────────
     private String resolveAddress(String addressText) {
         try {
-            String url = BASE_URL + "/addresses/search/findByAddressIgnoreCase?address="
+            String url = baseUrl + "/addresses/search/findByAddressIgnoreCase?address="
                     + java.net.URLEncoder.encode(addressText, "UTF-8");
             String json = restTemplate.getForObject(url, String.class);
             JsonNode root = objectMapper.readTree(json);
@@ -132,7 +134,7 @@ public class AddcustomerController {
     // ── RESOLVE STORE → "/stores/{id}" ───────────────────────
     private String resolveStore(String city) {
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/stores/search/findByAddress_City_CityIgnoreCase?city="
                     + java.net.URLEncoder.encode(city, "UTF-8")
                     + "&page=0&size=1";
@@ -158,7 +160,7 @@ public class AddcustomerController {
     // ── RESOLVE CUSTOMER ID AFTER CREATION ───────────────────
     private String resolveCustomerId(String firstName, String lastName) {
         try {
-            String url = BASE_URL
+            String url = baseUrl
                     + "/customers/search/findByFirstNameAndLastName?firstName="
                     + firstName + "&lastName=" + lastName;
             String json = restTemplate.getForObject(url, String.class);
