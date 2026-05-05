@@ -157,6 +157,7 @@ public class ActorController {
 
         model.addAttribute("data", data);
         model.addAttribute("firstName", firstName);
+        model.addAttribute("lastName", lastName);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("noData", data.isEmpty());
