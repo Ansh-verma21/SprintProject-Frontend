@@ -247,12 +247,12 @@
     <!-- Pagination -->
     <div class="pagination" th:if="${totalPages > 1}">
         <a th:href="@{/actors/films(firstName=${firstName}, lastName=${lastName}, page=0)}" class="page-link">First</a>
-        <a th:href="@{/actors/films(firstName=${firstName}, page=${currentPage - 1})}" 
+        <a th:href="@{/actors/films(firstName=${firstName}, lastName=${lastName}, page=${currentPage - 1})}" 
            th:unless="${currentPage == 0}" class="page-link">← Previous</a>
         <span class="page-info">Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span></span>
-        <a th:href="@{/actors/films(firstName=${firstName}, page=${currentPage + 1})}" 
+        <a th:href="@{/actors/films(firstName=${firstName}, lastName=${lastName}, page=${currentPage + 1})}" 
            th:unless="${currentPage + 1 >= totalPages}" class="page-link">Next →</a>
-        <a th:href="@{/actors/films(firstName=${firstName}, page=${totalPages - 1})}" class="page-link">Last</a>
+        <a th:href="@{/actors/films(firstName=${firstName}, lastName=${lastName}, page=${totalPages - 1})}" class="page-link">Last</a>
     </div>
 
 </main>
